@@ -1,0 +1,123 @@
+/* Add to src/index.css or your main global stylesheet */
+
+/* --- 1. VARIABLES & BASE STYLES --- */
+:root {
+  --c-primary: #7B61FF;
+  --c-secondary: #F97AFE;
+  --c-dark-violet: #4c1d95;
+  --c-gradient: linear-gradient(90deg, var(--c-secondary) 0%, var(--c-primary) 100%);
+  --c-bg: #FFFFFF;
+  --c-bg-alt: #F9FAFB;
+  --c-text-primary: #111827;
+  --c-text-secondary: #6B7280;
+  --c-border: #E5E7EB;
+  --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-soft-lg: 0 10px 25px -5px rgba(123, 97, 255, 0.1), 0 8px 10px -6px rgba(123, 97, 255, 0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+  color: var(--c-text-primary);
+  background-color: var(--c-bg-alt); /* Use the light grey background for forms */
+  overflow-x: hidden;
+}
+
+/* --- Shared Form Styles --- */
+.form-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.form-card {
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: var(--shadow-soft-lg);
+  text-align: center;
+}
+
+.form-logo {
+  height: 48px;
+  margin-bottom: 24px;
+}
+
+.form-card h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.form-card p {
+  color: var(--c-text-secondary);
+  margin-bottom: 32px;
+}
+
+.form-group {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.2);
+}
+
+.form-button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  background: var(--c-gradient);
+  color: white;
+  transition: all 0.3s ease;
+}
+.form-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft-lg);
+}
+
+.form-link {
+  margin-top: 24px;
+  font-size: 0.9rem;
+}
+.form-link a {
+  color: var(--c-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.form-link a:hover {
+  text-decoration: underline;
+}

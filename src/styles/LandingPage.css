@@ -1,0 +1,280 @@
+/* src/styles/LandingPage.css - Final Polished Version */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+/* --- 1. VARIABLES & BASE STYLES --- */
+:root {
+  --c-primary: #7B61FF;
+  --c-secondary: #F97AFE;
+  --c-dark-violet: #4c1d95; /* For card hover */
+  --c-gradient: linear-gradient(90deg, var(--c-secondary) 0%, var(--c-primary) 100%);
+  --c-bg: #FFFFFF;
+  --c-bg-alt: #F9FAFB;
+  --c-text-primary: #111827;
+  --c-text-secondary: #6B7280;
+  --c-border: #E5E7EB;
+  --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-soft-lg: 0 10px 25px -5px rgba(123, 97, 255, 0.1), 0 8px 10px -6px rgba(123, 97, 255, 0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+  color: var(--c-text-primary);
+  background-color: var(--c-bg);
+  overflow-x: hidden;
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.gradient-text {
+  background: var(--c-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.animate-fade-in {
+  opacity: 0;
+  transform: translateY(30px); /* Increased for more noticeable effect */
+  animation: fadeUp 0.8s ease-out forwards;
+}
+@keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+/* --- 2. NAVBAR (UPDATED STYLE WITH BIGGER LOGO) --- */
+.navbar {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--c-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 10px 30px;
+}
+.navbar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-left {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+.logo-image {
+  height: 100px;
+  width: auto;
+}
+.nav-center {
+  flex: 1; 
+  display: flex;
+  justify-content: center;
+}
+.nav-links {
+  display: flex;
+  gap: 50px;
+  list-style: none;
+}
+
+/* --- MODIFICATION STARTS HERE: Underline Effect Added --- */
+.nav-links a {
+  position: relative; /* Required for the pseudo-element */
+  text-decoration: none;
+  color: var(--c-text-secondary);
+  font-weight: 500;
+  transition: color 0.3s;
+  font-size: 16px;
+  white-space: nowrap;
+  padding-bottom: 8px; /* Creates space for the underline */
+}
+.nav-links a:hover {
+  color: var(--c-primary);
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0%; /* Starts with no width */
+  height: 2px;
+  background: var(--c-gradient); /* Uses the brand gradient */
+  transition: width 0.3s ease-out; /* Animates the width change */
+}
+.nav-links a:hover::after {
+  width: 100%; /* Expands to full width on hover */
+}
+/* --- MODIFICATION ENDS HERE --- */
+
+.nav-right {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+/* --- 3. BUTTONS (REVISED STYLE) --- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 12px 24px; border-radius: 50px;
+  font-weight: 600; font-size: 16px; border: none; cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-primary { background: var(--c-gradient); color: white; }
+.btn-primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: var(--shadow-soft-lg); }
+.btn-secondary { background: var(--c-bg); color: var(--c-text-primary); border: 2px solid var(--c-border); }
+.btn-secondary:hover { border-color: var(--c-primary); }
+.btn-icon { width: 20px; height: 20px; margin-left: 8px; }
+
+/* --- 4. GENERAL CARD STYLES (REVISED BORDER & HOVER) --- */
+.card-base {
+  background: var(--c-bg);
+  border-radius: 24px;
+  padding: 3px;
+  position: relative;
+  z-index: 1;
+  transition: all 0.4s ease-out;
+}
+.card-base::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: inherit;
+  background: var(--c-gradient);
+  z-index: -1;
+  transition: background 0.4s ease-out;
+}
+.card-base:hover::before {
+  background: var(--c-dark-violet);
+}
+.card-base > div {
+  background: var(--c-bg);
+  border-radius: 21px;
+  padding: 30px;
+  height: 100%;
+}
+.testimonial-card > div {
+  display: flex; flex-direction: column;
+}
+
+/* --- 5. HERO SECTION --- */
+.hero-section { padding: 80px 0; }
+.hero-content { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.hero-title { font-size: clamp(2.5rem, 5vw, 3.5rem); font-weight: 700; line-height: 1.2; margin-bottom: 24px; }
+.hero-description { font-size: 1.1rem; color: var(--c-text-secondary); margin-bottom: 32px; max-width: 500px; }
+.hero-visual { text-align: center; }
+.hero-image { max-width: 100%; }
+
+/* --- 6. AGE GROUPS SECTION --- */
+.age-groups-section { padding: 100px 0; }
+.section-header { text-align: center; margin-bottom: 64px; }
+.section-header h2 { font-size: clamp(2rem, 5vw, 2.5rem); font-weight: 700; margin-bottom: 16px; }
+.section-header p { font-size: 1.1rem; color: var(--c-text-secondary); max-width: 600px; margin: 0 auto; }
+.age-groups-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.age-group-card { text-align: center; }
+.age-icon { font-size: 2.5rem; margin-bottom: 16px; }
+.age-range { font-weight: 600; color: var(--c-text-secondary); margin-bottom: 8px; font-size: 0.9rem; }
+.age-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; }
+.age-desc { color: var(--c-text-secondary); font-size: 0.95rem; }
+
+/* --- 7. WHAT IS VARK SECTION --- */
+.vark-meaning-section { padding: 100px 0; background-color: var(--c-bg-alt); }
+.vark-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.vark-card { text-align: center; }
+.vark-icon { font-size: 2.5rem; margin-bottom: 16px; }
+.vark-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; }
+.vark-desc { color: var(--c-text-secondary); font-size: 0.95rem; margin-bottom: 16px; }
+.vark-example {
+  font-size: 0.9rem; color: var(--c-text-secondary);
+  background-color: var(--c-bg); padding: 8px; border-radius: 8px;
+  border: 1px solid var(--c-border); margin-top: auto;
+}
+.vark-card > div { display: flex; flex-direction: column; }
+.vark-example strong { color: var(--c-primary); }
+
+/* --- 8. HOW IT WORKS SECTION (REFINED LAYOUT) --- */
+.how-it-works-section { padding: 100px 0; }
+.steps-flow {
+  display: flex; justify-content: space-between; gap: 48px;
+  position: relative; padding: 40px 0;
+}
+.step-item { flex: 1; text-align: center; position: relative; z-index: 1; }
+.step-card {
+  background: var(--c-bg); border-radius: 20px;
+  padding: 24px; padding-top: 60px; position: relative;
+  transition: all 0.3s ease-out; height: 100%;
+  display: flex; flex-direction: column; justify-content: flex-start;
+  align-items: center; box-shadow: var(--shadow-soft);
+}
+.step-item:hover .step-card { transform: translateY(-10px); box-shadow: var(--shadow-soft-lg); }
+.step-icon-wrapper {
+  position: absolute; top: 0; left: 50%;
+  transform: translate(-50%, -50%); z-index: 2;
+}
+.step-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--c-gradient); color: white;
+  border: 4px solid var(--c-bg); box-shadow: var(--shadow-soft);
+}
+.step-details { margin-top: 16px; }
+.step-number { font-size: 1.2rem; font-weight: 700; color: var(--c-primary); margin-bottom: 8px; }
+.step-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 10px; }
+.step-desc { color: var(--c-text-secondary); font-size: 1rem; }
+.steps-flow::before {
+  content: ''; position: absolute; top: 76px; left: 15%; right: 15%;
+  height: 2px;
+  background: repeating-linear-gradient(to right, var(--c-border) 0, var(--c-border) 8px, transparent 8px, transparent 16px);
+  z-index: 0;
+}
+
+/* --- 9. TESTIMONIALS SECTION --- */
+.testimonials-section { padding: 100px 0; background-color: var(--c-bg-alt); }
+.testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.testimonial-stars { display: flex; gap: 2px; color: #FBBF24; margin-bottom: 16px; }
+.star.filled { fill: #FBBF24; }
+.testimonial-text { font-style: italic; margin-bottom: 24px; color: var(--c-text-secondary); flex-grow: 1; }
+.testimonial-author { display: flex; align-items: center; gap: 12px; }
+.author-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  overflow: hidden; border: 2px solid var(--c-primary); flex-shrink: 0;
+}
+.author-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.author-name { font-weight: 600; }
+.author-role { font-size: 0.9rem; color: var(--c-text-secondary); }
+
+/* --- 10. FOOTER --- */
+.footer { padding: 60px 0; background-color: var(--c-text-primary); color: white; }
+.footer-content { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px; }
+.footer-brand { display: flex; flex-direction: column; align-items: flex-start; }
+.footer-brand .logo-image {
+    height: 48px; margin-bottom: 16px; filter: brightness(0) invert(1);
+}
+.footer-brand p { color: #D1D5DB; }
+.footer-links h4 { font-size: 1rem; margin-bottom: 16px; }
+.footer-links ul { list-style: none; }
+.footer-links li { margin-bottom: 12px; }
+.footer-links a { color: #D1D5DB; text-decoration: none; transition: color 0.3s ease; }
+.footer-links a:hover { color: white; }
+.footer-bottom { border-top: 1px solid #374151; padding-top: 32px; margin-top: 48px; text-align: center; color: #9CA3AF; }
+
+/* --- 11. RESPONSIVE DESIGN --- */
+@media (max-width: 1024px) {
+  .nav-center { display: none; }
+  .age-groups-grid, .vark-grid, .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+  .steps-flow { flex-direction: column; align-items: center; gap: 64px; }
+  .steps-flow::before { display: none; }
+}
+
+@media (max-width: 768px) {
+  .hero-content { grid-template-columns: 1fr; text-align: center; }
+  .hero-text { order: 2; }
+  .hero-visual { order: 1; margin-bottom: 40px; }
+  .age-groups-grid, .vark-grid, .testimonials-grid { grid-template-columns: 1fr; }
+  .footer-content { grid-template-columns: 1fr; text-align: center; }
+  .footer-brand { align-items: center; }
+  .navbar-content { flex-wrap: nowrap; }
+  .nav-right { margin-left: auto; }
+  .nav-center { display: none; }
+}

@@ -1,0 +1,635 @@
+/* src/styles/VARKContent.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+/* --- 1. VARIABLES & BASE STYLES --- */
+:root {
+  --c-primary: #7B61FF;
+  --c-secondary: #F97AFE;
+  --c-dark-violet: #4c1d95;
+  --c-gradient: linear-gradient(90deg, var(--c-secondary) 0%, var(--c-primary) 100%);
+  --c-bg: #FFFFFF;
+  --c-bg-alt: #F9FAFB;
+  --c-text-primary: #111827;
+  --c-text-secondary: #6B7280;
+  --c-border: #E5E7EB;
+  --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-soft-lg: 0 10px 25px -5px rgba(123, 97, 255, 0.1), 0 8px 10px -6px rgba(123, 97, 255, 0.1);
+}
+
+/* --- 2. BASE STYLES --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
+  color: var(--c-text-primary);
+  background-color: var(--c-bg);
+  overflow-x: hidden;
+}
+
+.gradient-text {
+  background: var(--c-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.animate-fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeUp 0.8s ease-out forwards;
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- 3. MAIN CONTAINER --- */
+.vark-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  min-height: 100vh;
+}
+
+.vark-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.vark-header h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: var(--c-text-secondary);
+  font-weight: 500;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* --- 4. GRID LAYOUT --- */
+.vark-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 32px;
+  align-items: stretch;
+}
+
+@media (max-width: 768px) {
+  .vark-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .vark-header h1 {
+    font-size: 2.5rem;
+  }
+}
+
+/* --- 5. LEARNING CARDS --- */
+.learning-card {
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.learning-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--c-gradient);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.learning-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-soft-lg);
+  border-color: var(--c-primary);
+}
+
+.learning-card:hover::before {
+  transform: scaleX(1);
+}
+
+/* --- 6. CARD COMPONENTS --- */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.card-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--c-text-primary);
+  margin: 0;
+}
+
+.learning-badge {
+  background: var(--c-gradient);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.card-description {
+  font-size: 1.1rem;
+  color: var(--c-text-secondary);
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.card-footer {
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px solid var(--c-border);
+  font-style: italic;
+  color: var(--c-text-secondary);
+  font-size: 0.95rem;
+}
+
+/* --- 7. QUESTIONNAIRE SECTION & BUTTONS --- */
+.questionnaire-section {
+  margin: 24px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.questionnaire-btn {
+  background: var(--c-gradient);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.questionnaire-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft-lg);
+}
+
+.questionnaire-btn:active {
+  transform: translateY(0);
+}
+
+.questionnaire-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.questionnaire-btn:hover::before {
+  left: 100%;
+}
+
+/* Specific button variants */
+.visual-btn {
+  background: linear-gradient(135deg, #7B61FF 0%, #9C88FF 100%);
+}
+
+.auditory-btn {
+  background: linear-gradient(135deg, #F97AFE 0%, #FF9AFF 100%);
+}
+
+.reading-btn {
+  background: linear-gradient(135deg, #4C1D95 0%, #7B61FF 100%);
+}
+
+.kinesthetic-btn {
+  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+}
+
+/* --- 8. MEDIA CONTAINERS --- */
+.media-container {
+  margin: 24px 0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.video-frame {
+  border-radius: 16px;
+  transition: transform 0.3s ease;
+}
+
+.video-frame:hover {
+  transform: scale(1.02);
+}
+
+.audio-player {
+  width: 100%;
+  height: 54px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+/* --- 9. READING/WRITING SPECIFIC STYLES --- */
+.reading-content {
+  flex: 1;
+  line-height: 1.8;
+}
+
+.content-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  border: 1px solid var(--c-border);
+  background: var(--c-bg-alt);
+}
+
+.reading-content h3 {
+  color: var(--c-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.reading-content h4 {
+  color: var(--c-dark-violet);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.step-section {
+  background: var(--c-bg-alt);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--c-primary);
+}
+
+.fun-facts {
+  background: linear-gradient(135deg, rgba(123, 97, 255, 0.1) 0%, rgba(249, 122, 254, 0.1) 100%);
+  padding: 24px;
+  border-radius: 16px;
+  margin: 24px 0;
+}
+
+.fun-facts ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.fun-facts li {
+  position: relative;
+  padding-left: 32px;
+  margin-bottom: 12px;
+}
+
+.fun-facts li::before {
+  content: '💧';
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.key-words {
+  background: var(--c-bg-alt);
+  padding: 24px;
+  border-radius: 16px;
+  margin: 24px 0;
+}
+
+.keyword-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.keyword-item {
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border-left: 3px solid var(--c-secondary);
+  box-shadow: var(--shadow-soft);
+}
+
+.conclusion {
+  font-weight: 600;
+  color: var(--c-primary);
+  text-align: center;
+  padding: 20px;
+  background: var(--c-bg-alt);
+  border-radius: 12px;
+  margin-top: 24px;
+}
+
+/* --- 10. AUDITORY SPECIFIC STYLES --- */
+.audio-content {
+  background: var(--c-bg-alt);
+  padding: 24px;
+  border-radius: 16px;
+  margin: 20px 0;
+}
+
+.audio-content h3 {
+  color: var(--c-primary);
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+}
+
+/* --- 11. KINESTHETIC ACTIVITY STYLES --- */
+.kinesthetic-activity {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.step-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.droppable-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64px;
+  width: 100%;
+  background: var(--c-bg-alt);
+  border: 2px dashed var(--c-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.droppable-area:hover {
+  border-color: var(--c-primary);
+  background: rgba(123, 97, 255, 0.05);
+}
+
+.step-placeholder {
+  color: var(--c-text-secondary);
+  font-size: 1.1rem;
+}
+
+.dropped-item {
+  background: var(--c-gradient);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: var(--shadow-soft);
+}
+
+.drag-labels-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  min-height: 80px;
+  padding: 16px;
+  border: 2px dashed var(--c-border);
+  border-radius: 12px;
+  background: var(--c-bg-alt);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.draggable-label {
+  background: var(--c-gradient);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: grab;
+  user-select: none;
+  font-weight: 600;
+  box-shadow: var(--shadow-soft);
+  transition: all 0.2s ease;
+}
+
+.draggable-label:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft-lg);
+}
+
+.draggable-label:active {
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+
+.success-message {
+  color: #059669;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.feedback-section {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.correct-feedback {
+  color: #059669;
+  font-weight: 700;
+  font-size: 1.1rem;
+  background: rgba(5, 150, 105, 0.1);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
+.incorrect-feedback {
+  color: #DC2626;
+  font-weight: 700;
+  font-size: 1.1rem;
+  background: rgba(220, 38, 38, 0.1);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* --- 12. RESPONSIVE DESIGN --- */
+@media (max-width: 1200px) {
+  .vark-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .vark-container {
+    padding: 24px 16px;
+  }
+  
+  .learning-card {
+    padding: 24px;
+    min-height: auto;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .drag-labels-container {
+    flex-direction: column;
+  }
+  
+  .keyword-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .questionnaire-btn {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .vark-header h1 {
+    font-size: 2rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .card-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .learning-card {
+    padding: 20px;
+  }
+
+  .questionnaire-btn {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+  }
+}
+
+/* --- 13. ACCESSIBILITY & ANIMATIONS --- */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  
+  .learning-card {
+    transition: none;
+  }
+  
+  .video-frame:hover {
+    transform: none;
+  }
+
+  .questionnaire-btn {
+    transition: none;
+  }
+
+  .questionnaire-btn:hover {
+    transform: none;
+  }
+}
+
+/* Focus styles for accessibility */
+.learning-card:focus-within {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+.draggable-label:focus {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+.questionnaire-btn:focus {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+/* --- 14. ADDITIONAL ENHANCEMENTS --- */
+.learning-card.visual-card:hover {
+  background: linear-gradient(135deg, rgba(123, 97, 255, 0.02) 0%, rgba(249, 122, 254, 0.02) 100%);
+}
+
+.learning-card.auditory-card:hover {
+  background: linear-gradient(135deg, rgba(249, 122, 254, 0.02) 0%, rgba(123, 97, 255, 0.02) 100%);
+}
+
+.learning-card.reading-card:hover {
+  background: linear-gradient(135deg, rgba(123, 97, 255, 0.02) 0%, rgba(249, 122, 254, 0.02) 100%);
+}
+
+.learning-card.kinesthetic-card:hover {
+  background: linear-gradient(135deg, rgba(249, 122, 254, 0.02) 0%, rgba(123, 97, 255, 0.02) 100%);
+}
+
+/* Loading animation for delayed content */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.content-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Button hover effects */
+@keyframes buttonPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.questionnaire-btn:hover {
+  animation: buttonPulse 0.6s ease-in-out;
+}
