@@ -950,6 +950,70 @@
     background: rgba(123, 97, 255, 0.04);
 }
 
+/* ── Auditory: Play button & speaking state ── */
+.mc-narrative-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.mc-play-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--c-primary);
+    background: transparent;
+    color: var(--c-primary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.1s;
+    flex-shrink: 0;
+}
+
+.mc-play-btn:hover {
+    background: var(--c-primary);
+    color: #fff;
+    transform: scale(1.04);
+}
+
+.mc-play-btn--active {
+    background: var(--c-primary);
+    color: #fff;
+    animation: mc-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes mc-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(123, 97, 255, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(123, 97, 255, 0);
+    }
+}
+
+/* Highlight bubble currently being read */
+.mc-bubble--speaking .mc-bubble-text {
+    border: 1.5px solid var(--c-primary);
+    background: rgba(123, 97, 255, 0.12) !important;
+    transition: background 0.3s, border 0.3s;
+}
+
+.mc-audio-hint {
+    font-size: 0.75rem;
+    color: var(--c-text-muted, #888);
+    text-align: center;
+    margin: 4px 0 0;
+    font-style: italic;
+}
+
+
 /* ── 4c. READ/WRITE ── */
 .mc-readwrite .mc-rw-definition {
     background: var(--c-bg-alt);

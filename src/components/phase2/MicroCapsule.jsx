@@ -62,6 +62,60 @@ const VisualContent = ({ content }) => {
 // ── AUDITORY ─────────────────────────────────────────────────────────────────
 const AuditoryContent = ({ content }) => {
     const { narrative = [], mnemonic = '', analogy = '', analogy_spoken = '', learning_objective = '' } = content;
+    const [speaking, setSpeaking] = React.useState(false);
+    const [highlight, setHighlight] = React.useState(-1);   // index of bubble being read
+
+    // Build the full reading script in reading order
+    const buildScript = () => {
+        const parts = [];
+        if (analogy) parts.push(analogy);
+        narrative.forEach(line => parts.push(line));
+        if (mnemonic) parts.push('Memory anchor. ' + mnemonic);
+        if (analogy_spoken) parts.push(analogy_spoken);
+        return parts;
+    };
+
+    // Speak all parts sequentially, highlighting each bubble as it's read
+    const handlePlay = () => {
+        if (!window.speechSynthesis) return alert('Your browser does not support speech synthesis.');
+        window.speechSynthesis.cancel();        // stop any previous speech
+
+        const parts = buildScript();
+        let idx = 0;
+        setSpeaking(true);
+
+        const speakNext = () => {
+            if (idx >= parts.length) { setSpeaking(false); setHighlight(-1); return; }
+            const utt = new SpeechSynthesisUtterance(parts[idx]);
+            utt.rate = 0.92;
+            utt.pitch = 1.0;
+            // map parts index to narrative bubble index (offset by analogy line)
+            const bubbleIdx = analogy ? idx - 1 : idx;
+            setHighlight(bubbleIdx >= 0 && bubbleIdx < narrative.length ? bubbleIdx : -1);
+            utt.onend = () => { idx++; speakNext(); };
+            utt.onerror = () => { setSpeaking(false); setHighlight(-1); };
+            window.speechSynthesis.speak(utt);
+        };
+        speakNext();
+    };
+
+    const handleStop = () => {
+        window.speechSynthesis.cancel();
+        setSpeaking(false);
+        setHighlight(-1);
+    };
+
+    // Speak just one bubble on click
+    const speakBubble = (text) => {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 0.92;
+        window.speechSynthesis.speak(u);
+    };
+
+    // Clean up on unmount
+    React.useEffect(() => () => window.speechSynthesis?.cancel(), []);
+
     return (
         <div className="mc-auditory">
             <div className="mc-objective">
@@ -77,22 +131,40 @@ const AuditoryContent = ({ content }) => {
 
             {narrative.length > 0 && (
                 <div className="mc-narrative-wrap">
-                    <h3 className="mc-section-title">Listen Along</h3>
+                    <div className="mc-narrative-header">
+                        <h3 className="mc-section-title">Listen Along</h3>
+                        <button
+                            className={`mc-play-btn${speaking ? ' mc-play-btn--active' : ''}`}
+                            onClick={speaking ? handleStop : handlePlay}
+                            title={speaking ? 'Stop reading' : 'Read aloud'}
+                        >
+                            {speaking ? '⏹ Stop' : '▶ Play'}
+                        </button>
+                    </div>
                     <div className="mc-bubbles">
                         {narrative.map((line, i) => (
-                            <div key={i} className={`mc-bubble mc-bubble--${i % 2 === 0 ? 'left' : 'right'}`}>
+                            <div
+                                key={i}
+                                className={`mc-bubble mc-bubble--${i % 2 === 0 ? 'left' : 'right'}${highlight === i ? ' mc-bubble--speaking' : ''}`}
+                                onClick={() => speakBubble(line)}
+                                title="Click to hear this line"
+                                style={{ cursor: 'pointer' }}
+                            >
                                 <span className="mc-bubble-avatar">{i % 2 === 0 ? '▶' : '◆'}</span>
                                 <p className="mc-bubble-text">{line}</p>
                             </div>
                         ))}
                     </div>
+                    <p className="mc-audio-hint">Click any bubble to hear it individually, or press Play to hear everything.</p>
                 </div>
             )}
 
             {mnemonic && (
                 <div>
                     <h3 className="mc-section-title">Memory Anchor</h3>
-                    <div className="mc-mnemonic-box">{mnemonic}</div>
+                    <div className="mc-mnemonic-box" onClick={() => speakBubble(mnemonic)} style={{ cursor: 'pointer' }} title="Click to hear">
+                        {mnemonic}
+                    </div>
                 </div>
             )}
 
@@ -104,6 +176,7 @@ const AuditoryContent = ({ content }) => {
         </div>
     );
 };
+
 
 // ── READ / WRITE ──────────────────────────────────────────────────────────────
 const ReadWriteContent = ({ content }) => {
