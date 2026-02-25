@@ -29,11 +29,15 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// ── Guest-only route: redirect to /learning when already logged in ─
+// ── Guest-only route: redirect to /vark or /learning when already logged in ─
 const GuestRoute = ({ children }) => {
   const { currentUser, authLoading } = useAuth();
   if (authLoading) return null;
-  if (currentUser) return <Navigate to="/learning" replace />;
+  if (currentUser) {
+    // Returning user with VARK profile → learning hub
+    // New user without VARK profile → cold start
+    return <Navigate to={currentUser.vark_profile ? '/learning' : '/vark'} replace />;
+  }
   return children;
 };
 

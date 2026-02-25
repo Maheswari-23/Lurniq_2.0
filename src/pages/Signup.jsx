@@ -23,7 +23,7 @@ const Signup = () => {
     try {
       const data = await signup(form);
       handleAuthSuccess(data.user);
-      navigate('/questionnaire');   // take questionnaire first to set VARK
+      navigate('/vark');   // new user → cold start VARK page first
     } catch (err) {
       setError(err.message);
     } finally {
