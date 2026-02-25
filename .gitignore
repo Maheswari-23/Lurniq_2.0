@@ -31,7 +31,9 @@ backend/venv/
 # Trained ML model — large binary, re-trainable locally
 backend/vark_model.pkl
 backend/*.pkl
+backend/*.h5
 *.pkl
+*.h5
 
 # ── Secrets — NEVER commit these ───────────────────────
 .env

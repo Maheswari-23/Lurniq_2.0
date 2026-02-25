@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:5000/api';
+import API_BASE_URL from '../config.js';
 
 const Questionnaire = () => {
   const navigate = useNavigate();

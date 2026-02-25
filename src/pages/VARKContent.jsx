@@ -4,16 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/VARKContent.css';
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:5000/api';
+import API_BASE_URL from '../config.js';
 
 // --- Helper Components for Drag-and-Drop ---
 function DraggableLabel({ id, children, onDragStart }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
   const style = transform
     ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        zIndex: 10,
-      }
+      transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      zIndex: 10,
+    }
     : undefined;
 
   return (
@@ -46,11 +46,11 @@ const VARKContent = () => {
   const [startTime] = useState(Date.now());
   const [firstInteraction, setFirstInteraction] = useState(null);
   const [interactionSequence, setInteractionSequence] = useState([]);
-  
+
   // Enhanced engagement tracking
   const [engagement, setEngagement] = useState({
-    visual: { 
-      clicks: 0, 
+    visual: {
+      clicks: 0,
       timeSpent: 0,
       videoPlays: 0,
       videoPauses: 0,
@@ -59,8 +59,8 @@ const VARKContent = () => {
       hoverTime: 0,
       revisits: 0
     },
-    auditory: { 
-      clicks: 0, 
+    auditory: {
+      clicks: 0,
       timeSpent: 0,
       audioPlays: 0,
       audioPauses: 0,
@@ -70,8 +70,8 @@ const VARKContent = () => {
       hoverTime: 0,
       revisits: 0
     },
-    reading: { 
-      clicks: 0, 
+    reading: {
+      clicks: 0,
       timeSpent: 0,
       scrollDepth: 0,
       maxScrollDepth: 0,
@@ -79,8 +79,8 @@ const VARKContent = () => {
       hoverTime: 0,
       revisits: 0
     },
-    kinesthetic: { 
-      clicks: 0, 
+    kinesthetic: {
+      clicks: 0,
       timeSpent: 0,
       dragAttempts: 0,
       incorrectDrops: 0,
@@ -163,7 +163,7 @@ const VARKContent = () => {
   // Navigation to questionnaire with enhanced engagement data
   const handleQuestionnaireClick = (learningStyle, event) => {
     event.stopPropagation();
-    
+
     // Calculate final time for active section
     if (activeType) {
       const now = Date.now();
@@ -175,7 +175,7 @@ const VARKContent = () => {
           timeSpent: engagement[activeType].timeSpent + duration,
         },
       };
-      
+
       // Save to memory before navigation
       window.varkEngagement = finalEngagement;
       window.varkMetadata = {
@@ -183,19 +183,19 @@ const VARKContent = () => {
         interactionSequence,
         totalSessionTime: Math.floor((Date.now() - startTime) / 1000)
       };
-      
+
       console.log(`Navigating to questionnaire from ${learningStyle} learning style`);
       console.log('Final engagement data:', finalEngagement);
       console.log('Metadata:', window.varkMetadata);
     }
-    
+
     navigate('/questionnaire');
   };
 
   // Tracking clicks and time with revisit detection
   const handleContentClick = (type) => {
     const now = Date.now();
-    
+
     // Save time for previous active section
     if (activeType && activeType !== type) {
       const duration = Math.floor((now - sectionStartTime.current) / 1000);
@@ -242,11 +242,11 @@ const VARKContent = () => {
       const currentTime = videoRef.current.currentTime;
       const duration = videoRef.current.duration;
       const completionPercent = Math.floor((currentTime / duration) * 100);
-      
+
       setEngagement(prev => ({
         ...prev,
-        visual: { 
-          ...prev.visual, 
+        visual: {
+          ...prev.visual,
           videoPauses: prev.visual.videoPauses + 1,
           videoTimeWatched: Math.floor(currentTime),
           videoCompletionPercent: Math.max(prev.visual.videoCompletionPercent, completionPercent)
@@ -268,11 +268,11 @@ const VARKContent = () => {
       const currentTime = audioRef.current.currentTime;
       const duration = audioRef.current.duration;
       const completionPercent = Math.floor((currentTime / duration) * 100);
-      
+
       setEngagement(prev => ({
         ...prev,
-        auditory: { 
-          ...prev.auditory, 
+        auditory: {
+          ...prev.auditory,
           audioPauses: prev.auditory.audioPauses + 1,
           audioTimeListened: Math.floor(currentTime),
           audioCompletionPercent: Math.max(prev.auditory.audioCompletionPercent, completionPercent)
@@ -284,7 +284,7 @@ const VARKContent = () => {
   const handleAudioTimeUpdate = () => {
     if (audioRef.current) {
       const currentTime = audioRef.current.currentTime;
-      
+
       // Detect seeking (jumping backward/forward)
       if (Math.abs(currentTime - lastAudioTime.current) > 2) {
         setEngagement(prev => ({
@@ -292,7 +292,7 @@ const VARKContent = () => {
           auditory: { ...prev.auditory, seekEvents: prev.auditory.seekEvents + 1 }
         }));
       }
-      
+
       lastAudioTime.current = currentTime;
     }
   };
@@ -301,7 +301,7 @@ const VARKContent = () => {
   const handleReadingScroll = (e) => {
     const element = e.target;
     const scrollPercent = Math.floor((element.scrollTop / (element.scrollHeight - element.clientHeight)) * 100);
-    
+
     setEngagement(prev => ({
       ...prev,
       reading: {
@@ -349,7 +349,7 @@ const VARKContent = () => {
     if (!kinestheticStartTime.current) {
       kinestheticStartTime.current = Date.now();
     }
-    
+
     setEngagement(prev => ({
       ...prev,
       kinesthetic: { ...prev.kinesthetic, dragAttempts: prev.kinesthetic.dragAttempts + 1 }
@@ -359,7 +359,7 @@ const VARKContent = () => {
   // Handle drag and drop with enhanced tracking
   function handleDragEnd(event) {
     const { over, active } = event;
-    
+
     if (over) {
       const isOccupied = Object.values(droppedItems).includes(active.id);
       if (isOccupied) return;
@@ -376,7 +376,7 @@ const VARKContent = () => {
       };
 
       const isCorrectDrop = correctAnswers[over.id] === active.id;
-      
+
       if (isCorrectDrop) {
         setEngagement(prev => ({
           ...prev,
@@ -391,14 +391,14 @@ const VARKContent = () => {
 
       // Check if all slots are filled
       const allFilled = Object.values(newDroppedItems).every(val => val !== null);
-      
+
       if (allFilled && !hasCompletedOnce) {
         const completionTime = Math.floor((Date.now() - kinestheticStartTime.current) / 1000);
-        const isAllCorrect = 
+        const isAllCorrect =
           newDroppedItems["step-1"] === "Evaporation" &&
           newDroppedItems["step-2"] === "Condensation" &&
           newDroppedItems["step-3"] === "Precipitation";
-        
+
         setEngagement(prev => ({
           ...prev,
           kinesthetic: {
@@ -407,7 +407,7 @@ const VARKContent = () => {
             firstAttemptSuccess: attemptCount === 2 && isAllCorrect // 3 items = 3 attempts
           }
         }));
-        
+
         setHasCompletedOnce(true);
       }
     }
@@ -416,18 +416,18 @@ const VARKContent = () => {
   // Reset button handler
   const handleReset = (event) => {
     event.stopPropagation();
-    
+
     setDroppedItems({
       "step-1": null,
       "step-2": null,
       "step-3": null,
     });
-    
+
     setEngagement(prev => ({
       ...prev,
       kinesthetic: { ...prev.kinesthetic, resetClicks: prev.kinesthetic.resetClicks + 1 }
     }));
-    
+
     // Don't reset the start time or attempt count, keep tracking total attempts
   };
 
@@ -451,7 +451,7 @@ const VARKContent = () => {
             <span className="learning-badge">Watch & See</span>
           </div>
           <p className="card-description">Learn with diagrams, infographics, and videos.</p>
-          
+
           <div className="media-container">
             <iframe
               ref={videoRef}
@@ -468,16 +468,16 @@ const VARKContent = () => {
               onPause={handleVideoPause}
             ></iframe>
           </div>
-          
+
           <div className="questionnaire-section">
-            <button 
+            <button
               className="questionnaire-btn visual-btn"
               onClick={(e) => handleQuestionnaireClick('visual', e)}
             >
               📋 Take Learning Assessment
             </button>
           </div>
-          
+
           <div className="card-footer">
             <p>🎥 Interactive visual content helps you understand processes through observation</p>
           </div>
@@ -495,11 +495,11 @@ const VARKContent = () => {
             <span className="learning-badge">Listen & Learn</span>
           </div>
           <p className="card-description">Learn with podcasts, lectures, and discussions.</p>
-          
+
           <div className="media-container">
-            <audio 
+            <audio
               ref={audioRef}
-              controls 
+              controls
               className="audio-player"
               onPlay={handleAudioPlay}
               onPause={handleAudioPause}
@@ -509,21 +509,21 @@ const VARKContent = () => {
               Your browser does not support the audio element.
             </audio>
           </div>
-          
+
           <div className="audio-content">
             <h3>🌧️ Listen to Nature's Symphony</h3>
             <p>Experience the sounds of rain and learn about precipitation patterns through audio explanations and natural soundscapes.</p>
           </div>
-          
+
           <div className="questionnaire-section">
-            <button 
+            <button
               className="questionnaire-btn auditory-btn"
               onClick={(e) => handleQuestionnaireClick('auditory', e)}
             >
               🎧 Take Learning Assessment
             </button>
           </div>
-          
+
           <div className="card-footer">
             <p>🎧 Audio learning helps you retain information through listening and repetition</p>
           </div>
@@ -541,8 +541,8 @@ const VARKContent = () => {
             <span className="learning-badge">Read & Write</span>
           </div>
           <p className="card-description">Learn through detailed text, notes, and written explanations.</p>
-          
-          <div 
+
+          <div
             ref={readingRef}
             className="reading-content"
             onScroll={handleReadingScroll}
@@ -584,16 +584,16 @@ const VARKContent = () => {
 
             <p className="conclusion">This cycle keeps our planet's water moving and supports all life.</p>
           </div>
-          
+
           <div className="questionnaire-section">
-            <button 
+            <button
               className="questionnaire-btn reading-btn"
               onClick={(e) => handleQuestionnaireClick('reading', e)}
             >
               📝 Take Learning Assessment
             </button>
           </div>
-          
+
           <div className="card-footer">
             <p>📖 Reading and writing helps you process and retain detailed information</p>
           </div>
@@ -652,13 +652,13 @@ const VARKContent = () => {
                 ) : (
                   <div className="completion-feedback">
                     {droppedItems["step-1"] === "Evaporation" &&
-                     droppedItems["step-2"] === "Condensation" &&
-                     droppedItems["step-3"] === "Precipitation" ? (
+                      droppedItems["step-2"] === "Condensation" &&
+                      droppedItems["step-3"] === "Precipitation" ? (
                       <p className="success-message">🎉 Great Job! 🎉</p>
                     ) : (
                       <div>
                         <p className="error-message">❌ Not quite. Try again!</p>
-                        <button 
+                        <button
                           className="reset-btn"
                           onClick={handleReset}
                         >
@@ -675,8 +675,8 @@ const VARKContent = () => {
                 droppedItems["step-3"] && (
                   <div className="feedback-section">
                     {droppedItems["step-1"] === "Evaporation" &&
-                    droppedItems["step-2"] === "Condensation" &&
-                    droppedItems["step-3"] === "Precipitation" ? (
+                      droppedItems["step-2"] === "Condensation" &&
+                      droppedItems["step-3"] === "Precipitation" ? (
                       <p className="correct-feedback">
                         ✅ Correct! That's the right order.
                       </p>
@@ -688,16 +688,16 @@ const VARKContent = () => {
                   </div>
                 )}
             </div>
-            
+
             <div className="questionnaire-section">
-              <button 
+              <button
                 className="questionnaire-btn kinesthetic-btn"
                 onClick={(e) => handleQuestionnaireClick('kinesthetic', e)}
               >
                 🎯 Take Learning Assessment
               </button>
             </div>
-            
+
             <div className="card-footer">
               <p>🎯 Hands-on activities help you learn through movement and interaction</p>
             </div>

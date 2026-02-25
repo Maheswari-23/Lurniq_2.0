@@ -24,7 +24,15 @@ load_dotenv()  # loads backend/.env
 from vark_ml_model import HybridVARKPredictor, engineer_features, generate_synthetic_data
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}},
+
+# Allow requests from local dev and the deployed Render frontend
+_frontend_url = os.getenv("FRONTEND_URL", "")
+_allowed_origins = ["http://localhost:5173", "http://localhost:3000"]
+if _frontend_url:
+    _allowed_origins.append(_frontend_url)
+
+CORS(app,
+     resources={r"/api/*": {"origins": _allowed_origins}},
      supports_credentials=True)
 
 # ── JWT configuration ──────────────────────────────────────────────
@@ -1093,4 +1101,4 @@ if __name__ == '__main__':
     print("  POST /api/vark/update         - Bayesian VARK probability update")
     print("="*60 + "\n")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)

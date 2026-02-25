@@ -2,7 +2,8 @@
 // Handles all API calls for auth and user profile endpoints.
 // The JWT token is read/written to localStorage automatically.
 
-const API = 'http://localhost:5000/api';
+import API_BASE_URL from '../config.js';
+const API = API_BASE_URL;
 
 // ── Helpers ────────────────────────────────────────────────────────
 function getToken() {

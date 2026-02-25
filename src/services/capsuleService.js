@@ -1,7 +1,7 @@
 // src/services/capsuleService.js
 // Thin async wrapper around Phase 2 AIMC-Bandit backend endpoints.
 
-const API_BASE_URL = 'http://localhost:5000/api';
+import API_BASE_URL from '../config.js';
 
 /**
  * Fetch a personalized micro-capsule for a given topic and VARK modality.

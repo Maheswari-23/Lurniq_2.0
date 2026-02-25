@@ -1,6 +1,9 @@
 # ============================================
-# REQUIREMENTS.TXT
+# REQUIREMENTS.TXT  (production — no TensorFlow)
 # ============================================
+# TensorFlow is excluded to keep the Render free-tier build under memory
+# limits. The server has a graceful fallback that works without the ML
+# model. If you upgrade to a paid Render tier, add tensorflow==2.15.0.
 
 flask==3.0.0
 flask-cors==4.0.0
@@ -8,7 +11,7 @@ flask-jwt-extended==4.6.0
 numpy==1.26.4
 pandas==2.1.4
 scikit-learn==1.3.2
-tensorflow==2.15.0
 pymongo==4.6.1
 bcrypt==4.1.2
 python-dotenv==1.0.0
+gunicorn==21.2.0
