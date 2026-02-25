@@ -63,21 +63,24 @@ body {
   }
 }
 
-/* --- 2. NAVBAR (UPDATED STYLE WITH BIGGER LOGO) --- */
+/* --- 2. NAVBAR --- */
 .navbar {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--c-border);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
   position: sticky;
   top: 0;
   z-index: 100;
-  padding: 10px 30px;
+  padding: 0 30px;
+  height: 68px;
 }
 
 .navbar-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 100%;
 }
 
 .nav-left {
@@ -87,7 +90,7 @@ body {
 }
 
 .logo-image {
-  height: 100px;
+  height: 52px;
   width: auto;
 }
 
@@ -99,7 +102,7 @@ body {
 
 .nav-links {
   display: flex;
-  gap: 50px;
+  gap: 36px;
   list-style: none;
 }
 
@@ -146,7 +149,7 @@ body {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 
@@ -155,10 +158,10 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 24px;
+  padding: 9px 20px;
   border-radius: 50px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;

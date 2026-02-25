@@ -77,7 +77,7 @@ const LandingPage = () => {
     { name: "Mike Rodriguez", role: "Parent", text: "My daughter finally enjoys studying. The personalized approach made all the difference.", rating: 5, avatar: "https://randomuser.me/api/portraits/men/32.jpg" },
     { name: "Dr. Emily Watson", role: "Educator", text: "I use this with my students. The engagement metrics help me track their progress effectively.", rating: 5, avatar: "https://randomuser.me/api/portraits/women/44.jpg" }
   ];
-  
+
   const varkStyles = [
     { icon: '👁', title: 'Visual Learners (V)', desc: 'Prefer diagrams, charts, and mind maps. Understand best through images and colors.', example: 'Study with flowcharts and diagrams.' },
     { icon: '🎧', title: 'Auditory Learners (A)', desc: 'Learn best by listening and speaking. Benefit from lectures, podcasts, and discussions.', example: 'Record notes and play them back.' },
@@ -101,7 +101,7 @@ const LandingPage = () => {
             <div className="hero-content">
               <div className="hero-text">
                 <h1 className="hero-title">
-                  Unlock Your Potential with Lurniq – 
+                  Unlock Your Potential with Lurniq –
                   <span className="gradient-text"> Explore, Learn, and Grow!</span>
                 </h1>
                 <p className="hero-description">
@@ -141,7 +141,7 @@ const LandingPage = () => {
             </div>
           </div>
         </section>
-        
+
         <section ref={varkRef} id="vark-meaning" className={`vark-meaning-section ${isVarkVisible ? 'animate-fade-in' : ''}`}>
           <div className="container">
             <div className="section-header">
@@ -205,7 +205,7 @@ const LandingPage = () => {
                 <div key={index} className="card-base double-border">
                   <div className="testimonial-card">
                     <div className="testimonial-stars">
-                      {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="star filled" />)}
+                      {[...Array(testimonial.rating)].map((_, i) => <Star key={i} size={18} className="star filled" />)}
                     </div>
                     <p className="testimonial-text">"{testimonial.text}"</p>
                     <div className="testimonial-author">
