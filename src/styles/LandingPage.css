@@ -658,7 +658,99 @@ body {
     margin-left: auto;
   }
 
+
   .nav-center {
     display: none;
+  }
+}
+
+/* --- 12. SMALL PHONE (≤480px) --- */
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0 16px;
+    height: 60px;
+  }
+
+  .logo-image {
+    height: 42px;
+  }
+
+  .btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .hero-section {
+    padding: 48px 0;
+  }
+
+  .hero-title {
+    font-size: 1.9rem;
+  }
+
+  .hero-description {
+    font-size: 0.95rem;
+  }
+
+  .age-groups-section,
+  .vark-meaning-section,
+  .how-it-works-section,
+  .testimonials-section {
+    padding: 60px 0;
+  }
+
+  .section-header {
+    margin-bottom: 40px;
+  }
+
+  .section-header h2 {
+    font-size: 1.6rem;
+  }
+
+  .section-header p {
+    font-size: 0.95rem;
+  }
+
+  .testimonials-grid {
+    gap: 16px;
+  }
+
+  .testimonial-stars svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .footer {
+    padding: 40px 0;
+  }
+
+  .footer-content {
+    gap: 28px;
+  }
+
+  .footer-bottom {
+    padding-top: 20px;
+    margin-top: 28px;
+    font-size: 0.8rem;
+  }
+}
+
+/* --- 13. VERY SMALL (≤360px) --- */
+@media (max-width: 360px) {
+  .hero-title {
+    font-size: 1.6rem;
+  }
+
+  .logo-image {
+    height: 36px;
+  }
+
+  .btn {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+
+  .container {
+    padding: 0 14px;
   }
 }
