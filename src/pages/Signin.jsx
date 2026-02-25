@@ -83,7 +83,7 @@ const Signin = () => {
           <button type="submit" disabled={loading} style={s.btn}>{loading ? 'Signing in…' : 'Sign In'}</button>
           {waking && (
             <p style={{ marginTop: '12px', fontSize: '13px', color: '#7B61FF', textAlign: 'center', fontWeight: 500 }}>
-              🚀 Waking up server… this takes 30–60 seconds on first load.
+              Waking up server… this takes 30–60 seconds on first load.
             </p>
           )}
         </form>
