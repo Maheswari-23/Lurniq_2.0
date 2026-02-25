@@ -12,6 +12,7 @@ const Signin = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [waking, setWaking] = useState(false);  // cold-start hint
 
   const set = (field) => (e) => setForm(p => ({ ...p, [field]: e.target.value }));
 
@@ -19,6 +20,8 @@ const Signin = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    // Show "waking up" hint if server takes >3s (Render free tier cold start)
+    const wakingTimer = setTimeout(() => setWaking(true), 3000);
     try {
       const data = await signin(form);
       handleAuthSuccess(data.user);
@@ -32,6 +35,8 @@ const Signin = () => {
     } catch (err) {
       setError(err.message);
     } finally {
+      clearTimeout(wakingTimer);
+      setWaking(false);
       setLoading(false);
     }
   };
@@ -75,10 +80,17 @@ const Signin = () => {
             <input type="password" value={form.password} onChange={set('password')} placeholder="Enter your password" required style={s.input} onFocus={focus} onBlur={blur} />
           </div>
 
-          <button type="submit" disabled={loading} style={s.btn}>
-            {loading ? 'Signing in…' : 'Sign In'}
-          </button>
+          <button type="submit" disabled={loading} style={s.btn}>{loading ? 'Signing in…' : 'Sign In'}</button>
+          {waking && (
+            <p style={{ marginTop: '12px', fontSize: '13px', color: '#7B61FF', textAlign: 'center', fontWeight: 500 }}>
+              🚀 Waking up server… this takes 30–60 seconds on first load.
+            </p>
+          )}
         </form>
+
+        <p style={{ marginTop: '12px', textAlign: 'center' }}>
+          <Link to="/forgot-password" style={{ ...s.link, fontSize: '13px', fontWeight: 500, color: '#9CA3AF' }}>Forgot password?</Link>
+        </p>
 
         <p style={s.footer}>
           Don&apos;t have an account?{' '}

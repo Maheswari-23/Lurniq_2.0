@@ -228,6 +228,72 @@ def update_vark():
         'vark_profile': vark_profile,
     }), 200
 
+# ── profile / password endpoints ───────────────────────────────────
+
+@app.route('/api/profile', methods=['PUT'])
+@jwt_required()
+def update_profile():
+    """Update name and age_group for the current user."""
+    from bson import ObjectId
+    user_id = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    name = data.get('name', '').strip()
+    age_group = data.get('age_group', '').strip()
+    if not name:
+        return jsonify({'success': False, 'error': 'Name is required'}), 400
+    db = get_db()
+    db['users'].update_one(
+        {'_id': ObjectId(user_id)},
+        {'$set': {'name': name, 'age_group': age_group, 'updated_at': datetime.now(timezone.utc).isoformat()}}
+    )
+    return jsonify({'success': True, 'name': name, 'age_group': age_group}), 200
+
+
+@app.route('/api/change-password', methods=['POST'])
+@jwt_required()
+def change_password():
+    """Change password for logged-in user. Requires current_password verification."""
+    from bson import ObjectId
+    import bcrypt
+    user_id = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    current_pw = data.get('current_password', '')
+    new_pw = data.get('new_password', '')
+    if not current_pw or not new_pw:
+        return jsonify({'success': False, 'error': 'current_password and new_password are required'}), 400
+    if len(new_pw) < 6:
+        return jsonify({'success': False, 'error': 'New password must be at least 6 characters'}), 400
+    db = get_db()
+    user = db['users'].find_one({'_id': ObjectId(user_id)})
+    if not user:
+        return jsonify({'success': False, 'error': 'User not found'}), 404
+    if not bcrypt.checkpw(current_pw.encode('utf-8'), user['password']):
+        return jsonify({'success': False, 'error': 'Current password is incorrect'}), 401
+    hashed = bcrypt.hashpw(new_pw.encode('utf-8'), bcrypt.gensalt())
+    db['users'].update_one({'_id': ObjectId(user_id)}, {'$set': {'password': hashed}})
+    return jsonify({'success': True, 'message': 'Password changed successfully'}), 200
+
+
+@app.route('/api/forgot-password', methods=['POST'])
+def forgot_password():
+    """Reset password by email — no email service, direct reset."""
+    import bcrypt
+    data = request.get_json(silent=True) or {}
+    email = data.get('email', '').strip().lower()
+    new_pw = data.get('new_password', '')
+    if not email or not new_pw:
+        return jsonify({'success': False, 'error': 'email and new_password are required'}), 400
+    if len(new_pw) < 6:
+        return jsonify({'success': False, 'error': 'Password must be at least 6 characters'}), 400
+    db = get_db()
+    user = db['users'].find_one({'email': email})
+    if not user:
+        return jsonify({'success': False, 'error': 'No account found with this email address'}), 404
+    hashed = bcrypt.hashpw(new_pw.encode('utf-8'), bcrypt.gensalt())
+    db['users'].update_one({'email': email}, {'$set': {'password': hashed}})
+    return jsonify({'success': True, 'message': 'Password reset successfully'}), 200
+
+
 # ── end auth endpoints ─────────────────────────────────────────────
 
 predictor = None

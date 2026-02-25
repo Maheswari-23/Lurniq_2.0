@@ -39,6 +39,7 @@ const Navbar = () => {
         <div style={s.links} className="nb-desktop">
           <NavLink to="/learning" style={({ isActive }) => activeLink(isActive)}>Learning Hub</NavLink>
           <NavLink to="/questionnaire" style={({ isActive }) => activeLink(isActive)}>Retake VARK</NavLink>
+          <NavLink to="/profile" style={({ isActive }) => activeLink(isActive)}>Profile</NavLink>
           {currentUser && (
             <>
               <span style={s.user}>Hi, {currentUser.name?.split(' ')[0]} 👋</span>
@@ -47,22 +48,19 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Hamburger button — visible only on mobile via CSS */}
-        <button
-          className="nb-burger"
-          onClick={() => setMenuOpen(o => !o)}
-          aria-label="Toggle menu"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '22px', color: '#111827', padding: '4px', display: 'none' }}
-        >
+        {/* Hamburger */}
+        <button className="nb-burger" onClick={() => setMenuOpen(o => !o)} aria-label="Toggle menu"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '22px', color: '#111827', padding: '4px', display: 'none' }}>
           {menuOpen ? '✕' : '☰'}
         </button>
       </nav>
 
       {/* Mobile drawer */}
       {menuOpen && (
-        <div className="nb-drawer" style={{ background: 'white', borderTop: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ background: 'white', borderTop: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <NavLink to="/learning" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Learning Hub</NavLink>
           <NavLink to="/questionnaire" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Retake VARK</NavLink>
+          <NavLink to="/profile" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Profile</NavLink>
           {currentUser && (
             <>
               <span style={{ fontSize: '13px', color: '#6B7280' }}>Hi, {currentUser.name?.split(' ')[0]} 👋</span>

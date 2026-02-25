@@ -108,7 +108,7 @@ const LandingPage = () => {
                   Discover your unique learning style and get access to customized content, interactive lessons, and expert guidance tailored just for you.
                 </p>
                 <div className="hero-buttons">
-                  <button className="btn btn-primary">
+                  <button className="btn btn-primary" onClick={() => window.location.href = '/signup'}>
                     <span>Get Started for Free</span>
                     <ArrowRight className="btn-icon" />
                   </button>

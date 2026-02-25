@@ -124,6 +124,8 @@ const Questionnaire = () => {
           style: data.predicted_style,
           allScores: data.all_scores || {},
         });
+        // Navigate to celebration screen
+        navigate('/vark-result');
       } else {
         throw new Error(data.error || 'Prediction failed');
       }
@@ -144,6 +146,8 @@ const Questionnaire = () => {
       setResult(fallbackResult);
       // Persist fallback to localStorage + DB
       await saveVark({ style: learningStyle, allScores: fallbackScores });
+      // Navigate to celebration screen
+      navigate('/vark-result');
     } finally {
       setIsLoading(false);
     }

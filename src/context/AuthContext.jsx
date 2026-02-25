@@ -77,8 +77,13 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
+    /** Update local user state (e.g. after profile edit). */
+    const updateUser = useCallback((fields) => {
+        setCurrentUser(prev => prev ? { ...prev, ...fields } : prev);
+    }, []);
+
     return (
-        <AuthContext.Provider value={{ currentUser, authLoading, handleAuthSuccess, logout, saveVark }}>
+        <AuthContext.Provider value={{ currentUser, authLoading, handleAuthSuccess, logout, saveVark, updateUser }}>
             {children}
         </AuthContext.Provider>
     );
