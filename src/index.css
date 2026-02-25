@@ -15,16 +15,66 @@
   --shadow-soft-lg: 0 10px 25px -5px rgba(123, 97, 255, 0.1), 0 8px 10px -6px rgba(123, 97, 255, 0.1);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   font-family: 'Poppins', sans-serif;
   line-height: 1.6;
   color: var(--c-text-primary);
-  background-color: var(--c-bg-alt); /* Use the light grey background for forms */
+  background-color: var(--c-bg-alt);
   overflow-x: hidden;
 }
+
+/* ── Dark Mode ── */
+[data-theme="dark"] {
+  --c-bg: #1F2937;
+  --c-bg-alt: #111827;
+  --c-text-primary: #F9FAFB;
+  --c-text-secondary: #9CA3AF;
+  --c-border: #374151;
+}
+
+[data-theme="dark"] body {
+  background-color: #111827;
+  color: #F9FAFB;
+}
+
+[data-theme="dark"] .lc-container,
+[data-theme="dark"] .form-card,
+[data-theme="dark"] .card-base>div {
+  background: #1F2937 !important;
+  border-color: #374151 !important;
+  color: #F9FAFB !important;
+}
+
+[data-theme="dark"] .lc-header {
+  background: #1F2937;
+  border-color: #374151;
+}
+
+[data-theme="dark"] .lc-title {
+  color: #F9FAFB;
+}
+
+[data-theme="dark"] .lc-subtitle {
+  color: #9CA3AF;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select {
+  background: #374151 !important;
+  color: #F9FAFB !important;
+  border-color: #4B5563 !important;
+}
+
 
 /* --- Shared Form Styles --- */
 .form-container {
@@ -104,6 +154,7 @@ body {
   color: white;
   transition: all 0.3s ease;
 }
+
 .form-button:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-soft-lg);
@@ -113,11 +164,13 @@ body {
   margin-top: 24px;
   font-size: 0.9rem;
 }
+
 .form-link a {
   color: var(--c-primary);
   font-weight: 600;
   text-decoration: none;
 }
+
 .form-link a:hover {
   text-decoration: underline;
 }

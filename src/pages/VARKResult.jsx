@@ -119,12 +119,37 @@ const VARKResult = () => {
                     Start My Personalized Journey
                     <ArrowRight size={18} strokeWidth={2.5} />
                 </button>
+
+                {/* Share Result */}
+                <ShareBtn cfg={cfg} scores={scores} />
+
                 <p style={{ textAlign: 'center', fontSize: '12px', color: '#9CA3AF', marginTop: '10px' }}>
                     Content is now curated for your {cfg.label} profile
                 </p>
 
             </div>
         </div>
+    );
+};
+
+const ShareBtn = ({ cfg, scores }) => {
+    const [copied, setCopied] = useState(false);
+    const handleShare = () => {
+        const text = [
+            `🎓 I just discovered my VARK Learning Style on Lurniq!`,
+            ``,
+            `✨ I'm a ${cfg.label}`,
+            `📊 My breakdown:`,
+            ...Object.entries(scores).map(([s, v]) => `   ${s}: ${Math.round(v * 100)}%`),
+            ``,
+            `Discover yours → lurniq.onrender.com`,
+        ].join('\n');
+        navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
+    };
+    return (
+        <button onClick={handleShare} style={{ marginTop: '10px', width: '100%', padding: '13px', background: 'white', color: '#7B61FF', border: '1.5px solid #C4B5FD', borderRadius: '14px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}>
+            {copied ? '✅ Copied to clipboard!' : '🔗 Share My Result'}
+        </button>
     );
 };
 
