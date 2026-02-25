@@ -1,6 +1,6 @@
 // src/pages/VARKResult.jsx
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Eye, Headphones, BookOpen, Zap, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 
@@ -15,12 +15,16 @@ const VARK_ORDER = ['Visual', 'Auditory', 'Reading', 'Kinesthetic'];
 
 const VARKResult = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { currentUser } = useAuth();
     const [barsReady, setBarsReady] = useState(false);
 
-    const vark = currentUser?.vark_profile;
-    const style = vark?.dominant_style || 'Visual';
-    const scores = vark?.all_scores || { Visual: 0.25, Auditory: 0.25, Reading: 0.25, Kinesthetic: 0.25 };
+    // Priority: fresh navigate state (retake) > DB profile (returning user)
+    // Also handle both key formats: camelCase (fresh) and snake_case (DB)
+    const fromNav = location.state;  // { style, allScores } passed from Questionnaire
+    const fromDB = currentUser?.vark_profile;
+    const style = fromNav?.style || fromDB?.dominant_style || fromDB?.style || 'Visual';
+    const scores = fromNav?.allScores || fromDB?.all_scores || fromDB?.allScores || { Visual: 0.25, Auditory: 0.25, Reading: 0.25, Kinesthetic: 0.25 };
     const cfg = STYLE_CONFIG[style] || STYLE_CONFIG.Visual;
     const StyleIcon = cfg.icon;
 
@@ -120,36 +124,12 @@ const VARKResult = () => {
                     <ArrowRight size={18} strokeWidth={2.5} />
                 </button>
 
-                {/* Share Result */}
-                <ShareBtn cfg={cfg} scores={scores} />
-
-                <p style={{ textAlign: 'center', fontSize: '12px', color: '#9CA3AF', marginTop: '10px' }}>
+                <p style={{ textAlign: 'center', fontSize: '12px', color: '#9CA3AF', marginTop: '12px' }}>
                     Content is now curated for your {cfg.label} profile
                 </p>
 
             </div>
         </div>
-    );
-};
-
-const ShareBtn = ({ cfg, scores }) => {
-    const [copied, setCopied] = useState(false);
-    const handleShare = () => {
-        const text = [
-            `🎓 I just discovered my VARK Learning Style on Lurniq!`,
-            ``,
-            `✨ I'm a ${cfg.label}`,
-            `📊 My breakdown:`,
-            ...Object.entries(scores).map(([s, v]) => `   ${s}: ${Math.round(v * 100)}%`),
-            ``,
-            `Discover yours → lurniq.onrender.com`,
-        ].join('\n');
-        navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
-    };
-    return (
-        <button onClick={handleShare} style={{ marginTop: '10px', width: '100%', padding: '13px', background: 'white', color: '#7B61FF', border: '1.5px solid #C4B5FD', borderRadius: '14px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}>
-            {copied ? '✅ Copied to clipboard!' : '🔗 Share My Result'}
-        </button>
     );
 };
 

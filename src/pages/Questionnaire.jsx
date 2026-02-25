@@ -124,8 +124,8 @@ const Questionnaire = () => {
           style: data.predicted_style,
           allScores: data.all_scores || {},
         });
-        // Navigate to celebration screen
-        navigate('/vark-result');
+        // Navigate to celebration screen — pass fresh result via state
+        navigate('/vark-result', { state: { style: data.predicted_style, allScores: data.all_scores || {} } });
       } else {
         throw new Error(data.error || 'Prediction failed');
       }
@@ -146,8 +146,8 @@ const Questionnaire = () => {
       setResult(fallbackResult);
       // Persist fallback to localStorage + DB
       await saveVark({ style: learningStyle, allScores: fallbackScores });
-      // Navigate to celebration screen
-      navigate('/vark-result');
+      // Navigate to celebration screen — pass fresh result via state
+      navigate('/vark-result', { state: { style: learningStyle, allScores: fallbackScores } });
     } finally {
       setIsLoading(false);
     }
