@@ -632,7 +632,63 @@ body {
 
   .hero-visual {
     order: 1;
-    margin-bottom: 40px;
+    margin-bottom: 32px;
+  }
+
+  /* Stack hero CTA buttons */
+  .hero-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  /* Cards: reduce inner padding */
+  .card-base>div {
+    padding: 22px;
+  }
+
+  /* Age group cards */
+  .age-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+
+  .age-title {
+    font-size: 1.05rem;
+  }
+
+  .age-desc {
+    font-size: 0.88rem;
+  }
+
+  /* VARK cards */
+  .vark-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+
+  .vark-title {
+    font-size: 1.05rem;
+  }
+
+  .vark-desc {
+    font-size: 0.88rem;
+  }
+
+  /* Step cards */
+  .step-card {
+    padding: 20px;
+    padding-top: 50px;
+  }
+
+  .step-title {
+    font-size: 1.1rem;
+  }
+
+  .step-desc {
+    font-size: 0.9rem;
   }
 
   .age-groups-grid,
@@ -680,16 +736,107 @@ body {
     font-size: 13px;
   }
 
+  /* Landing nav — stack Sign In / Sign Up vertically & shrink */
+  .nav-right {
+    gap: 6px;
+  }
+
+  .nav-right .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
   .hero-section {
     padding: 48px 0;
   }
 
   .hero-title {
-    font-size: 1.9rem;
+    font-size: 1.75rem;
   }
 
   .hero-description {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
+  }
+
+  /* Cards on phones: tight padding, smaller text */
+  .card-base {
+    border-radius: 18px;
+  }
+
+  .card-base>div {
+    padding: 16px;
+    border-radius: 15px;
+  }
+
+  .age-icon,
+  .vark-icon {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+  }
+
+  .age-range {
+    font-size: 0.8rem;
+  }
+
+  .age-title,
+  .vark-title {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  .age-desc,
+  .vark-desc {
+    font-size: 0.85rem;
+  }
+
+  .vark-example {
+    font-size: 0.82rem;
+    padding: 6px;
+  }
+
+  /* Step cards */
+  .step-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .step-card {
+    padding: 16px;
+    padding-top: 44px;
+    border-radius: 16px;
+  }
+
+  .step-number {
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+
+  .step-title {
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+
+  .step-desc {
+    font-size: 0.85rem;
+  }
+
+  /* Testimonials */
+  .testimonial-text {
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+  }
+
+  .author-name {
+    font-size: 0.9rem;
+  }
+
+  .author-role {
+    font-size: 0.8rem;
+  }
+
+  .author-avatar {
+    width: 40px;
+    height: 40px;
   }
 
   .age-groups-section,
@@ -700,24 +847,24 @@ body {
   }
 
   .section-header {
-    margin-bottom: 40px;
+    margin-bottom: 36px;
   }
 
   .section-header h2 {
-    font-size: 1.6rem;
+    font-size: 1.55rem;
   }
 
   .section-header p {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
 
   .testimonials-grid {
-    gap: 16px;
+    gap: 14px;
   }
 
   .testimonial-stars svg {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
   }
 
   .footer {
@@ -725,20 +872,20 @@ body {
   }
 
   .footer-content {
-    gap: 28px;
+    gap: 24px;
   }
 
   .footer-bottom {
     padding-top: 20px;
-    margin-top: 28px;
-    font-size: 0.8rem;
+    margin-top: 24px;
+    font-size: 0.78rem;
   }
 }
 
 /* --- 13. VERY SMALL (≤360px) --- */
 @media (max-width: 360px) {
   .hero-title {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
   }
 
   .logo-image {
@@ -746,11 +893,21 @@ body {
   }
 
   .btn {
-    padding: 7px 12px;
-    font-size: 12px;
+    padding: 6px 10px;
+    font-size: 11px;
   }
 
   .container {
-    padding: 0 14px;
+    padding: 0 12px;
+  }
+
+  .card-base>div {
+    padding: 14px;
+  }
+
+  .age-groups-grid,
+  .vark-grid,
+  .testimonials-grid {
+    gap: 12px;
   }
 }
