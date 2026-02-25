@@ -227,7 +227,7 @@ body {
   height: 100%;
 }
 
-.testimonial-card>div {
+.testimonial-card {
   display: flex;
   flex-direction: column;
 }
@@ -482,7 +482,7 @@ body {
 
 .testimonial-stars {
   display: flex;
-  flex-direction: row;
+  flex-direction: row !important;
   align-items: center;
   gap: 4px;
   color: #FBBF24;
@@ -490,8 +490,10 @@ body {
 }
 
 .testimonial-stars svg {
-  display: inline-block;
+  display: inline-block !important;
   flex-shrink: 0;
+  width: 18px;
+  height: 18px;
 }
 
 .star.filled {
