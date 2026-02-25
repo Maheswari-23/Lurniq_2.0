@@ -3,6 +3,7 @@ services:
   - type: web
     name: lurniq-backend
     runtime: python
+    pythonVersion: "3.11.9"
     region: singapore          # closest to India; change if needed
     plan: free
     rootDir: backend
