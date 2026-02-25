@@ -62,6 +62,7 @@ body {
   margin: 0 auto;
   padding: 40px 24px;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .vark-header {
@@ -87,7 +88,8 @@ body {
 /* --- 4. GRID LAYOUT --- */
 .vark-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  /* minmax(min(500px,100%),1fr) collapses to 1-col on narrow screens automatically */
+  grid-template-columns: repeat(auto-fit, minmax(min(500px, 100%), 1fr));
   gap: 32px;
   align-items: stretch;
 }
@@ -97,7 +99,7 @@ body {
     grid-template-columns: 1fr;
     gap: 24px;
   }
-  
+
   .vark-header h1 {
     font-size: 2.5rem;
   }
@@ -117,6 +119,9 @@ body {
   min-height: 600px;
   display: flex;
   flex-direction: column;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .learning-card::before {
@@ -224,7 +229,7 @@ body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s;
 }
 
@@ -507,21 +512,30 @@ body {
   .vark-container {
     padding: 24px 16px;
   }
-  
+
+  .vark-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .vark-header h1 {
+    font-size: 2.5rem;
+  }
+
   .learning-card {
     padding: 24px;
     min-height: auto;
   }
-  
+
   .card-header {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .drag-labels-container {
     flex-direction: column;
   }
-  
+
   .keyword-grid {
     grid-template-columns: 1fr;
   }
@@ -533,18 +547,65 @@ body {
 }
 
 @media (max-width: 480px) {
+  .vark-container {
+    padding: 16px 12px;
+  }
+
+  .vark-grid {
+    gap: 14px;
+  }
+
+  .vark-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+  }
+
+  .learning-card {
+    padding: 18px;
+    border-radius: 18px;
+    min-height: auto;
+  }
+
+  .card-header h2 {
+    font-size: 1.35rem;
+  }
+
+  .card-description {
+    font-size: 0.95rem;
+  }
+
+  .questionnaire-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+
+  .droppable-area {
+    height: 56px;
+  }
+
+  .drag-labels-container {
+    padding: 12px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
   .vark-header h1 {
     font-size: 2rem;
   }
-  
+
   .subtitle {
     font-size: 1rem;
   }
-  
+
   .card-header h2 {
     font-size: 1.5rem;
   }
-  
+
   .learning-card {
     padding: 20px;
   }
@@ -562,11 +623,11 @@ body {
     opacity: 1;
     transform: none;
   }
-  
+
   .learning-card {
     transition: none;
   }
-  
+
   .video-frame:hover {
     transform: none;
   }
@@ -615,8 +676,15 @@ body {
 
 /* Loading animation for delayed content */
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .content-loading {
@@ -625,9 +693,17 @@ body {
 
 /* Button hover effects */
 @keyframes buttonPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .questionnaire-btn:hover {
