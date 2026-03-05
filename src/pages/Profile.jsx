@@ -1,7 +1,6 @@
 // src/pages/Profile.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import Logo from '../assets/logo.png';
 import API_BASE_URL from '../config.js';
 
 const VARK_COLORS = { Visual: '#7B61FF', Auditory: '#F97AFE', Reading: '#4C1D95', Kinesthetic: '#10B981' };
@@ -17,10 +16,10 @@ const Profile = () => {
     const [profileLoading, setProfileLoading] = useState(false);
     const [pwLoading, setPwLoading] = useState(false);
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('lurniq_token');
     const vark = currentUser?.vark_profile;
-    const scores = vark?.all_scores || {};
-    const dominant = vark?.dominant_style;
+    const scores = vark?.allScores || {};
+    const dominant = vark?.style;
 
     const updateProfile = async (e) => {
         e.preventDefault();
@@ -88,7 +87,7 @@ const Profile = () => {
                 {/* VARK Card */}
                 {dominant && (
                     <div style={s.card}>
-                        <h2 style={s.cardTitle}>🎯 Your VARK Profile</h2>
+                        <h2 style={s.cardTitle}>Your VARK Profile</h2>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', background: `${VARK_COLORS[dominant]}15`, padding: '14px 18px', borderRadius: '12px', border: `1.5px solid ${VARK_COLORS[dominant]}40` }}>
                             <span style={{ fontSize: '28px' }}>{VARK_EMOJI[dominant]}</span>
                             <div>

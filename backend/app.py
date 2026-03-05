@@ -267,10 +267,10 @@ def change_password():
     user = db['users'].find_one({'_id': ObjectId(user_id)})
     if not user:
         return jsonify({'success': False, 'error': 'User not found'}), 404
-    if not bcrypt.checkpw(current_pw.encode('utf-8'), user['password']):
+    if not bcrypt.checkpw(current_pw.encode('utf-8'), user['password_hash'].encode('utf-8')):
         return jsonify({'success': False, 'error': 'Current password is incorrect'}), 401
-    hashed = bcrypt.hashpw(new_pw.encode('utf-8'), bcrypt.gensalt())
-    db['users'].update_one({'_id': ObjectId(user_id)}, {'$set': {'password': hashed}})
+    hashed = bcrypt.hashpw(new_pw.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    db['users'].update_one({'_id': ObjectId(user_id)}, {'$set': {'password_hash': hashed}})
     return jsonify({'success': True, 'message': 'Password changed successfully'}), 200
 
 
@@ -289,8 +289,8 @@ def forgot_password():
     user = db['users'].find_one({'email': email})
     if not user:
         return jsonify({'success': False, 'error': 'No account found with this email address'}), 404
-    hashed = bcrypt.hashpw(new_pw.encode('utf-8'), bcrypt.gensalt())
-    db['users'].update_one({'email': email}, {'$set': {'password': hashed}})
+    hashed = bcrypt.hashpw(new_pw.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    db['users'].update_one({'email': email}, {'$set': {'password_hash': hashed}})
     return jsonify({'success': True, 'message': 'Password reset successfully'}), 200
 
 

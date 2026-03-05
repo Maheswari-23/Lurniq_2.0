@@ -852,7 +852,7 @@ const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs
                     {phase === 'loading' && (
                         <div className="cv-loading">
                             <div className="cv-spinner" />
-                            <p>Loading {modality} capsule…</p>
+                            <p>Loading {activeModality} capsule…</p>
                         </div>
                     )}
 
