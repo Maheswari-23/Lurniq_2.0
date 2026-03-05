@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/Toast';
-import { DarkModeProvider } from './context/DarkModeContext';
 
 import LandingPage from './pages/LandingPage';
 import Signup from './pages/Signup';
@@ -41,27 +40,25 @@ const GuestRoute = ({ children }) => {
 
 function App() {
   return (
-    <DarkModeProvider>
-      <ToastProvider>
-        <AuthProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/signup" element={<GuestRoute><Signup /></GuestRoute>} />
-              <Route path="/signin" element={<GuestRoute><Signin /></GuestRoute>} />
-              <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetup /></ProtectedRoute>} />
-              <Route path="/questionnaire" element={<ProtectedRoute><Questionnaire /></ProtectedRoute>} />
-              <Route path="/vark-result" element={<ProtectedRoute><VARKResult /></ProtectedRoute>} />
-              <Route path="/vark" element={<ProtectedRoute><MainLayout><VARKContentPage /></MainLayout></ProtectedRoute>} />
-              <Route path="/learning" element={<ProtectedRoute><MainLayout><LearningContent /></MainLayout></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Router>
-        </AuthProvider>
-      </ToastProvider>
-    </DarkModeProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/signup" element={<GuestRoute><Signup /></GuestRoute>} />
+            <Route path="/signin" element={<GuestRoute><Signin /></GuestRoute>} />
+            <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetup /></ProtectedRoute>} />
+            <Route path="/questionnaire" element={<ProtectedRoute><Questionnaire /></ProtectedRoute>} />
+            <Route path="/vark-result" element={<ProtectedRoute><VARKResult /></ProtectedRoute>} />
+            <Route path="/vark" element={<ProtectedRoute><MainLayout><VARKContentPage /></MainLayout></ProtectedRoute>} />
+            <Route path="/learning" element={<ProtectedRoute><MainLayout><LearningContent /></MainLayout></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

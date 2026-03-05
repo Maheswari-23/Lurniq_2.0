@@ -82,9 +82,12 @@ const Signin = () => {
 
           <button type="submit" disabled={loading} style={s.btn}>{loading ? 'Signing in…' : 'Sign In'}</button>
           {waking && (
-            <p style={{ marginTop: '12px', fontSize: '13px', color: '#7B61FF', textAlign: 'center', fontWeight: 500 }}>
-              Waking up server… this takes 30–60 seconds on first load.
-            </p>
+            <div style={{ marginTop: '14px', background: '#F5F3FF', border: '1px solid #C4B5FD', borderRadius: '10px', padding: '12px 14px', textAlign: 'left' }}>
+              <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#7B61FF', fontWeight: 700 }}>Waking up the server…</p>
+              <p style={{ margin: 0, fontSize: '12px', color: '#5B21B6', lineHeight: 1.5 }}>
+                Our free-tier server sleeps after 15 min of inactivity. <strong>Please wait 30–60 seconds</strong> — it will sign you in automatically. Don't refresh the page!
+              </p>
+            </div>
           )}
         </form>
 

@@ -154,22 +154,40 @@ const FALLBACK_TEMPLATES = {
 
     /* ── CONDITIONALS ───────────────────── */
     conditionals_Visual: {
-        learning_objective: 'Understand if-else branching via flowchart diagrams.',
+        learning_objective: 'Understand if-elif-else branching via a detailed flowchart.',
         diagram: [
-            '      START',
-            '        ↓',
-            '   ◇ condition? ◇',
-            '   ↓ True    ↓ False',
-            '  [if body] [else body]',
-            '       ↓         ↓',
-            '      END←←←←←←←',
+            '  ┌─────────────┐',
+            '  │    START    │',
+            '  └──────┬──────┘',
+            '         │',
+            '  ┌──────▼──────────────┐',
+            '  │  if condition?      │',
+            '  └──────┬──────────────┘',
+            '    True │      │ False',
+            '  ┌──────▼──┐   ┌──────▼────────────┐',
+            '  │ if body │   │  elif condition?  │',
+            '  └──────┬──┘   └──────┬────────────┘',
+            '         │       True  │     │ False',
+            '         │    ┌────────▼┐  ┌─▼──────────┐',
+            '         │    │elif body│  │  else body │',
+            '         │    └────────┬┘  └─┬──────────┘',
+            '         │             │     │',
+            '  ┌──────▼─────────────▼─────▼──┐',
+            '  │             END             │',
+            '  └──────────────────────────────┘',
         ],
         color_code: [
-            { label: 'if', color: '#7B61FF', value: 'if condition:', type: 'keyword' },
-            { label: 'elif', color: '#F97AFE', value: 'elif condition:', type: 'keyword' },
+            { label: 'if', color: '#7B61FF', value: 'if x > 0:', type: 'keyword' },
+            { label: 'elif', color: '#F97AFE', value: 'elif x < 0:', type: 'keyword' },
             { label: 'else', color: '#10B981', value: 'else:', type: 'keyword' },
+            { label: 'result', color: '#F59E0B', value: 'print("positive" / "negative" / "zero")', type: 'output' },
         ],
-        steps: ['1. Write the if and its condition.', '2. Indent the body.', '3. Add elif for extra branches.', '4. Add else as the final fallback.'],
+        steps: [
+            '1. Write if condition: — Python checks this first.',
+            '2. Indent the if-body — runs only when True.',
+            '3. elif condition: — only checked when if was False.',
+            '4. else: — fallback when ALL above conditions are False.',
+        ],
     },
     conditionals_Auditory: {
         learning_objective: 'Understand conditionals through spoken decision flow.',
@@ -667,33 +685,35 @@ function buildFallbackCapsule(topic, modality) {
 // ---------------------------------------------------------------------------
 // CapsuleViewer component
 // ---------------------------------------------------------------------------
-const CapsuleViewer = ({ topic, topicLabel, modality, varkProbs, onClose }) => {
+const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs, onClose }) => {
     const [phase, setPhase] = useState('loading');
     const [capsule, setCapsule] = useState(null);
     const [error, setError] = useState(null);
     const [quizResult, setQuizResult] = useState(null);
     const [reward, setReward] = useState(null);
     const [updatedProbs, setUpdatedProbs] = useState(null);
+    const [activeModality, setActiveModality] = useState(initialModality);
 
     const contentStartTime = useRef(null);
+    const VARK_STYLES = ['Visual', 'Auditory', 'Reading', 'Kinesthetic'];
+    const VARK_COLORS = { Visual: '#7B61FF', Auditory: '#F97AFE', Reading: '#1D4ED8', Kinesthetic: '#059669' };
 
-    // Load content: use the rich client-side template bank immediately (instant, no network),
-    // then attempt to fetch from Flask in the background and upgrade if it returns richer content.
+    // Reload content every time activeModality changes
     useEffect(() => {
         let cancelled = false;
+        setPhase('loading');
+        setCapsule(null);
 
-        // Step 1: Show local template immediately (all 10 topics × 4 modalities are pre-built)
-        const local = buildFallbackCapsule(topic, modality);
+        // Step 1: Show local template immediately
+        const local = buildFallbackCapsule(topic, activeModality);
         setCapsule(local);
         setPhase('content');
         contentStartTime.current = Date.now();
 
-        // Step 2: Try Flask in background — upgrade if backend returns verified content
+        // Step 2: Try Flask in background
         (async () => {
             try {
-                const data = await generateCapsule(topic, modality, 1);
-                // Only upgrade if Flask has genuine modality-specific content —
-                // NOT the generic DEFAULT_TEMPLATE which only has notes/required_labels.
+                const data = await generateCapsule(topic, activeModality, 1);
                 const RICH_FIELDS = ['diagram', 'narrative', 'challenge', 'definition', 'syntax', 'color_code'];
                 const hasRichContent = data?.content &&
                     RICH_FIELDS.some(f => data.content[f] && (
@@ -701,17 +721,14 @@ const CapsuleViewer = ({ topic, topicLabel, modality, varkProbs, onClose }) => {
                             ? data.content[f].length > 0
                             : Object.keys(data.content[f]).length > 0
                     ));
-                if (!cancelled && hasRichContent) {
-                    setCapsule(data);
-                }
+                if (!cancelled && hasRichContent) setCapsule(data);
             } catch {
                 // Ignore — already showing local template
             }
         })();
 
-
         return () => { cancelled = true; };
-    }, [topic, modality]);
+    }, [topic, activeModality]);
 
     // Lock body scroll
     useEffect(() => {
@@ -727,6 +744,7 @@ const CapsuleViewer = ({ topic, topicLabel, modality, varkProbs, onClose }) => {
     }, [updatedProbs]);
 
     const handleClose = () => onClose(updatedProbs || varkProbs);
+    const modalityLow = activeModality.toLowerCase();
 
     const handleQuizComplete = async ({ correct, total, satisfaction }) => {
         const timeSpent = contentStartTime.current
@@ -736,13 +754,14 @@ const CapsuleViewer = ({ topic, topicLabel, modality, varkProbs, onClose }) => {
 
         try {
             const ir = await logInteraction({
-                topic, modality, time_spent: timeSpent,
+                topic, modality: activeModality, time_spent: timeSpent,
                 quiz_results: { correct, total }, satisfaction,
                 vark_probs: varkProbs, session_id: window._lurniqSessionId ?? 'default',
             });
             const r = ir.reward ?? 0;
             setReward(r);
-            const ur = await updateVarkProbabilities(varkProbs, r, modality);
+            // Update VARK silently in background — no UI notification
+            const ur = await updateVarkProbabilities(varkProbs, r, activeModality);
             if (ur.success) {
                 setUpdatedProbs(ur.updated_probs);
                 if (window.varkResult) { window.varkResult.allScores = ur.updated_probs; window.varkResult.style = ur.dominant_style; }
@@ -753,7 +772,6 @@ const CapsuleViewer = ({ topic, topicLabel, modality, varkProbs, onClose }) => {
     };
 
     const displayLabel = topicLabel || (topic.charAt(0).toUpperCase() + topic.slice(1));
-    const modalityLow = modality.toLowerCase();
 
     return (
         <div className="cv-overlay" onClick={handleClose} role="dialog" aria-modal="true">
@@ -765,10 +783,20 @@ const CapsuleViewer = ({ topic, topicLabel, modality, varkProbs, onClose }) => {
                 {/* Header */}
                 <div className="cv-header">
                     <div className="cv-header-left">
-                        <span className={`cv-modality-pill cv-modality-pill--${modalityLow}`}>{modality}</span>
+                        <span className={`cv-modality-pill cv-modality-pill--${modalityLow}`}>{activeModality}</span>
                         <h2 className="cv-topic-title">{displayLabel}</h2>
                     </div>
-                    <button className="cv-close-btn" onClick={handleClose} aria-label="Close">✕</button>
+                    {/* VARK style switcher dropdown */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <select
+                            value={activeModality}
+                            onChange={e => { setActiveModality(e.target.value); setPhase('loading'); setQuizResult(null); }}
+                            style={{ fontSize: '12px', fontWeight: 600, border: `1.5px solid ${VARK_COLORS[activeModality]}`, borderRadius: '8px', padding: '4px 8px', background: 'white', color: VARK_COLORS[activeModality], cursor: 'pointer', outline: 'none', fontFamily: 'inherit' }}
+                        >
+                            {VARK_STYLES.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        <button className="cv-close-btn" onClick={handleClose} aria-label="Close">✕</button>
+                    </div>
                 </div>
 
                 {/* Body */}
@@ -787,7 +815,7 @@ const CapsuleViewer = ({ topic, topicLabel, modality, varkProbs, onClose }) => {
                         <>
                             {error && <div className="cv-error-banner">Backend unreachable — showing cached template.</div>}
                             {capsule
-                                ? <MicroCapsule topic={topic} modality={modality} content={capsule.content} />
+                                ? <MicroCapsule topic={topic} modality={activeModality} content={capsule.content} />
                                 : <div className="cv-loading"><div className="cv-spinner" /><p>Loading…</p></div>
                             }
                             {capsule && (
@@ -805,7 +833,7 @@ const CapsuleViewer = ({ topic, topicLabel, modality, varkProbs, onClose }) => {
                         <>
                             <h3 className="cv-quiz-heading">Quick Check</h3>
                             <p className="cv-quiz-sub">Test what you have just studied.</p>
-                            <QuizBlock topic={topic} modality={modality} onComplete={handleQuizComplete} />
+                            <QuizBlock topic={topic} modality={activeModality} onComplete={handleQuizComplete} />
                         </>
                     )}
 
@@ -813,8 +841,8 @@ const CapsuleViewer = ({ topic, topicLabel, modality, varkProbs, onClose }) => {
                     {phase === 'result' && quizResult && (
                         <div className="cv-result">
                             <h3 className="cv-result-heading">
-                                {quizResult.correct === quizResult.total ? 'Perfect Score' :
-                                    quizResult.correct >= Math.ceil(quizResult.total / 2) ? 'Session Complete' : 'Keep Practising'}
+                                {quizResult.correct === quizResult.total ? '🎉 Perfect Score!' :
+                                    quizResult.correct >= Math.ceil(quizResult.total / 2) ? '✅ Session Complete' : '💪 Keep Practising'}
                             </h3>
 
                             <div className="cv-result-score-card">
@@ -830,24 +858,7 @@ const CapsuleViewer = ({ topic, topicLabel, modality, varkProbs, onClose }) => {
                                 )}
                             </div>
 
-                            {updatedProbs && (
-                                <div className="cv-vark-update">
-                                    <h4>Updated VARK Profile</h4>
-                                    <div className="cv-vark-bars">
-                                        {Object.entries(updatedProbs).map(([style, prob]) => (
-                                            <div key={style} className="cv-vark-bar-row">
-                                                <span className="cv-vark-bar-label">{style}</span>
-                                                <div className="cv-vark-bar-track">
-                                                    <div className={`cv-vark-bar-fill cv-vark-bar-fill--${style.toLowerCase()}`}
-                                                        style={{ width: `${(prob * 100).toFixed(1)}%` }} />
-                                                </div>
-                                                <span className="cv-vark-bar-pct">{(prob * 100).toFixed(1)}%</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <p className="cv-vark-note">Bayesian update applied — λ = 0.9</p>
-                                </div>
-                            )}
+                            {/* VARK profile update happens silently — no badge shown to user */}
 
                             <button className="cv-btn cv-btn--primary cv-btn--wide" onClick={handleClose}>
                                 Back to Topics

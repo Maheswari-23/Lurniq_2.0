@@ -1,13 +1,12 @@
-// src/pages/LearningContent.jsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ContentCard from '../components/phase2/ContentCard';
 import CapsuleViewer from '../components/phase2/CapsuleViewer';
+import AIChatbot from '../components/AIChatbot';
 import '../styles/phase2.css';
 import { useAuth } from '../context/AuthContext';
-import { useToast } from '../components/Toast';
 import { useStreak, getBadge } from '../hooks/useStreak';
-import { Search, X, BookOpen, Flame, Trophy, Zap } from 'lucide-react';
+import { Search, X, BookOpen, Flame, Trophy, CheckCircle2 } from 'lucide-react';
 
 // ── Topic catalogue ────────────────────────────────────────────────
 const TOPICS = [
@@ -66,10 +65,10 @@ const LearningContent = () => {
         setTimeout(() => setLoading(false), 700); // brief skeleton
     }, [currentUser]);
 
-    // Show streak toast on new day
+    // Show streak message on new day (silent — no toast)
     useEffect(() => {
         if (isNewDay && streak > 1) {
-            setTimeout(() => toast(`${badge.emoji} ${streak}-day streak! Keep it up!`, 'success'), 800);
+            // streak milestone noted — could show badge in future
         }
     }, [isNewDay]);
 
@@ -100,8 +99,7 @@ const LearningContent = () => {
             const dominant = Object.entries(updatedProbs).reduce((best, [k, v]) => v > best[1] ? [k, v] : best, ['Visual', 0])[0];
             const updated = { style: dominant, allScores: updatedProbs };
             setVarkData(updated);
-            await saveVark(updated);
-            toast('VARK profile updated after session!', 'success');
+            await saveVark(updated);  // persist silently — no user notification
         }
         if (selectedTopic) markComplete(selectedTopic.id);
         setSelectedTopic(null);
@@ -239,8 +237,8 @@ const LearningContent = () => {
                     {filtered.map(topic => (
                         <div key={topic.id} style={{ position: 'relative' }}>
                             {completed.includes(topic.id) && (
-                                <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10, background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: '99px', padding: '3px 10px', fontSize: '11px', fontWeight: 700, color: '#065F46', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    <Zap size={10} color="#059669" /> Done
+                                <div title="Completed" style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10 }}>
+                                    <CheckCircle2 size={20} color="#059669" strokeWidth={2.5} style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' }} />
                                 </div>
                             )}
                             <ContentCard
@@ -276,6 +274,9 @@ const LearningContent = () => {
                     onClose={handleViewerClose}
                 />
             )}
+
+            {/* Floating AI Chatbot */}
+            <AIChatbot varkStyle={modality} />
         </div>
     );
 };
