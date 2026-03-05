@@ -5,6 +5,7 @@ import CapsuleViewer from '../components/phase2/CapsuleViewer';
 import AIChatbot from '../components/AIChatbot';
 import '../styles/phase2.css';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/Toast';
 import { useStreak, getBadge } from '../hooks/useStreak';
 import { Search, X, BookOpen, Flame, Trophy, CheckCircle2 } from 'lucide-react';
 
