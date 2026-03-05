@@ -1,10 +1,22 @@
 // src/components/AIChatbot.jsx
-// Floating chatbot — user enters any topic, instantly gets VARK-tailored content
+// Floating chatbot — user enters any topic, gets VARK-tailored content.
+// After each bot reply, shows "+ Add to Learning Hub" button to add
+// the topic as a new custom module with content across all 4 VARK styles.
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Bot, User } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Bot, PlusCircle } from 'lucide-react';
 import API_BASE_URL from '../config.js';
 
+const BUILTIN_IDS = new Set([
+    'variables', 'operators', 'conditionals', 'loops', 'functions',
+    'arrays', 'recursion', 'oop', 'datastructures', 'complexity',
+]);
+
 const QUICK_STARTERS = ['Explain Big-O simply', 'What is a closure?', 'How does sorting work?', 'What is hashing?'];
+
+// Slugify a question into a topic id
+function slugify(text) {
+    return text.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40);
+}
 
 const AIChatbot = ({ varkStyle = 'Visual' }) => {
     const [open, setOpen] = useState(false);
@@ -17,6 +29,20 @@ const AIChatbot = ({ varkStyle = 'Visual' }) => {
 
     useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, open]);
 
+    const addToHub = (question, answer) => {
+        if (!window.__addCustomTopic) return;
+        const id = slugify(question);
+        if (BUILTIN_IDS.has(id)) return; // don't add built-ins again
+        window.__addCustomTopic({
+            id,
+            label: question.slice(0, 60),
+            description: answer.slice(0, 120) + '…',
+            difficulty: 2,
+            category: 'My Topics',
+            chatbotAnswer: answer,
+        });
+    };
+
     const sendMessage = async (text) => {
         const q = (text || input).trim();
         if (!q || loading) return;
@@ -24,6 +50,7 @@ const AIChatbot = ({ varkStyle = 'Visual' }) => {
         setMessages(m => [...m, { role: 'user', text: q }]);
         setLoading(true);
 
+        let answer = '';
         try {
             const res = await fetch(`${API_BASE_URL}/chatbot`, {
                 method: 'POST',
@@ -32,14 +59,21 @@ const AIChatbot = ({ varkStyle = 'Visual' }) => {
             });
             if (!res.ok) throw new Error('Server error');
             const data = await res.json();
-            setMessages(m => [...m, { role: 'bot', text: data.answer || 'Sorry, I couldn\'t find an answer.' }]);
+            answer = data.answer || 'Sorry, I couldn\'t find an answer.';
         } catch {
-            // Offline fallback — generate a basic explanation client-side
-            const fallback = generateFallback(q, varkStyle);
-            setMessages(m => [...m, { role: 'bot', text: fallback }]);
+            answer = generateFallback(q, varkStyle);
         } finally {
             setLoading(false);
         }
+
+        // Append bot reply + "Add to Hub" action
+        const id = slugify(q);
+        const isBuiltin = BUILTIN_IDS.has(id);
+        setMessages(m => [
+            ...m,
+            { role: 'bot', text: answer },
+            ...(!isBuiltin ? [{ role: 'action', question: q, answer }] : []),
+        ]);
     };
 
     return (
@@ -66,7 +100,7 @@ const AIChatbot = ({ varkStyle = 'Visual' }) => {
             {open && (
                 <div style={{
                     position: 'fixed', bottom: '92px', right: '24px', zIndex: 999,
-                    width: '340px', maxHeight: '480px',
+                    width: '340px', maxHeight: '520px',
                     background: 'white', borderRadius: '20px',
                     boxShadow: '0 12px 48px rgba(0,0,0,0.15)',
                     display: 'flex', flexDirection: 'column',
@@ -77,6 +111,9 @@ const AIChatbot = ({ varkStyle = 'Visual' }) => {
             @keyframes chatPop { from{opacity:0;transform:scale(0.85) translateY(16px)} to{opacity:1;transform:none} }
             .chat-msg-bot  { background:#F5F3FF; color:#111827; border-radius:14px 14px 14px 4px; align-self:flex-start; }
             .chat-msg-user { background:linear-gradient(90deg,#F97AFE,#7B61FF); color:white; border-radius:14px 14px 4px 14px; align-self:flex-end; }
+            .add-hub-btn   { display:inline-flex; align-items:center; gap:5px; margin-top:6px; padding:5px 12px; background:#F0FDF4; color:#059669; border:1px solid #A7F3D0; border-radius:99px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; align-self:flex-start; transition:all 0.18s; }
+            .add-hub-btn:hover { background:#DCFCE7; border-color:#6EE7B7; }
+            .add-hub-btn.added { background:#E0FFF4; color:#047857; cursor:default; opacity:0.7; }
           `}</style>
 
                     {/* Header */}
@@ -88,11 +125,18 @@ const AIChatbot = ({ varkStyle = 'Visual' }) => {
 
                     {/* Messages */}
                     <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0 }}>
-                        {messages.map((m, i) => (
-                            <div key={i} className={m.role === 'bot' ? 'chat-msg-bot' : 'chat-msg-user'} style={{ padding: '10px 13px', fontSize: '13px', lineHeight: 1.55, maxWidth: '85%' }}>
-                                {m.text}
-                            </div>
-                        ))}
+                        {messages.map((m, i) => {
+                            if (m.role === 'action') {
+                                return (
+                                    <AddToHubButton key={i} question={m.question} answer={m.answer} onAdd={addToHub} />
+                                );
+                            }
+                            return (
+                                <div key={i} className={m.role === 'bot' ? 'chat-msg-bot' : 'chat-msg-user'} style={{ padding: '10px 13px', fontSize: '13px', lineHeight: 1.55, maxWidth: '85%' }}>
+                                    {m.text}
+                                </div>
+                            );
+                        })}
                         {loading && (
                             <div className="chat-msg-bot" style={{ padding: '10px 13px', display: 'flex', gap: '6px', alignItems: 'center' }}>
                                 <Loader2 size={14} color="#7B61FF" style={{ animation: 'spin 1s linear infinite' }} />
@@ -102,7 +146,7 @@ const AIChatbot = ({ varkStyle = 'Visual' }) => {
                         <div ref={endRef} />
                     </div>
 
-                    {/* Quick starters (only on first message) */}
+                    {/* Quick starters */}
                     {messages.length === 1 && (
                         <div style={{ padding: '0 12px 10px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                             {QUICK_STARTERS.map(q => (
@@ -133,7 +177,23 @@ const AIChatbot = ({ varkStyle = 'Visual' }) => {
     );
 };
 
-// ── Client-side fallback when backend offline ──────────────────────────────
+// ── "Add to Learning Hub" button — tracks own added state ──────────
+function AddToHubButton({ question, answer, onAdd }) {
+    const [added, setAdded] = useState(false);
+    const handleAdd = () => {
+        if (added) return;
+        onAdd(question, answer);
+        setAdded(true);
+    };
+    return (
+        <button className={`add-hub-btn${added ? ' added' : ''}`} onClick={handleAdd}>
+            <PlusCircle size={13} />
+            {added ? 'Added to Learning Hub ✓' : '+ Add to Learning Hub'}
+        </button>
+    );
+}
+
+// ── Client-side fallback when backend offline ──────────────────────
 function generateFallback(question, style) {
     const q = question.toLowerCase();
     if (q.includes('closure')) return style === 'Visual' ? 'A closure is a function that "captures" variables from its enclosing scope. Think of it as a backpack 🎒 — the function carries its variables with it.' : 'A closure is a function that retains access to variables from its outer scope even after that scope has finished executing.';

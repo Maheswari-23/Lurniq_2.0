@@ -674,6 +674,51 @@ const FALLBACK_TEMPLATES = {
 };
 
 function buildFallbackCapsule(topic, modality) {
+    // Check if this is a custom chatbot-added topic
+    const customTopics = (() => { try { return JSON.parse(localStorage.getItem('lurniq_custom_topics') || '[]'); } catch { return []; } })();
+    const custom = customTopics.find(t => t.id === topic);
+
+    if (custom?.chatbotAnswer) {
+        const answer = custom.chatbotAnswer;
+        const label = custom.label || topic;
+        let content;
+        if (modality === 'Visual') {
+            content = {
+                learning_objective: `Understand "${label}" through a visual breakdown.`,
+                analogy: answer.slice(0, 200),
+                diagram: answer.split('. ').slice(0, 5).map((s, i) => `  ${i + 1}. ${s.trim()}`),
+                steps: answer.split('. ').slice(0, 4).map(s => s.trim()).filter(Boolean),
+            };
+        } else if (modality === 'Auditory') {
+            content = {
+                learning_objective: `Understand "${label}" through narrative explanation.`,
+                analogy: answer.slice(0, 180),
+                narrative: answer.split('. ').slice(0, 5).map(s => s.trim()).filter(Boolean),
+                mnemonic: `Key idea: ${answer.slice(0, 80)}`,
+            };
+        } else if (modality === 'Reading') {
+            content = {
+                learning_objective: `Understand "${label}" through structured reading.`,
+                definition: answer,
+                notes: answer.split('. ').slice(0, 5).map(s => `• ${s.trim()}`).filter(s => s.length > 3),
+                key_terms: [{ term: label, definition: answer.slice(0, 120) }],
+            };
+        } else { // Kinesthetic
+            content = {
+                learning_objective: `Apply understanding of "${label}" hands-on.`,
+                analogy: answer.slice(0, 180),
+                challenge: {
+                    instruction: `Based on what you just learned about "${label}", write a brief example or code snippet that demonstrates the concept.`,
+                    starter: `# Your answer about ${label}:\n# ...`,
+                    solution: `# Key points:\n${answer.split('. ').slice(0, 3).map(s => `# - ${s.trim()}`).join('\n')}`,
+                    hints: ['Review the AI explanation above.', 'Try to apply the concept to a real-world scenario.'],
+                },
+            };
+        }
+        return { success: true, learning_objective: content.learning_objective, modality, difficulty: 2, content, confidence_score: 0.75, verified: true };
+    }
+
+    // Built-in topics — use FALLBACK_TEMPLATES
     const key = `${topic}_${modality}`;
     const content = FALLBACK_TEMPLATES[key] ?? {
         learning_objective: `Study ${topic} through the ${modality} learning approach.`,
@@ -681,6 +726,7 @@ function buildFallbackCapsule(topic, modality) {
     };
     return { success: true, learning_objective: content.learning_objective, modality, difficulty: 1, content, confidence_score: 0.8, verified: true };
 }
+
 
 // ---------------------------------------------------------------------------
 // CapsuleViewer component
