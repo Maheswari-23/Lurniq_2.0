@@ -122,15 +122,20 @@ const LearningContent = () => {
     };
 
     const handleViewerClose = async (updatedProbs) => {
-        if (updatedProbs) {
-            const dominant = Object.entries(updatedProbs).reduce((best, [k, v]) => v > best[1] ? [k, v] : best, ['Visual', 0])[0];
-            const updated = { style: dominant, allScores: updatedProbs };
-            setVarkData(updated);
-            setActiveModality(dominant);
-            await saveVark(updated);
+        try {
+            if (updatedProbs) {
+                const dominant = Object.entries(updatedProbs).reduce((best, [k, v]) => v > best[1] ? [k, v] : best, ['Visual', 0])[0];
+                const updated = { style: dominant, allScores: updatedProbs };
+                setVarkData(updated);
+                setActiveModality(dominant);
+                await saveVark(updated);
+            }
+            if (selectedTopic) markComplete(selectedTopic.id);
+        } catch (e) {
+            console.warn('[LearningContent] handleViewerClose error (non-critical):', e.message);
+        } finally {
+            setSelectedTopic(null);
         }
-        if (selectedTopic) markComplete(selectedTopic.id);
-        setSelectedTopic(null);
     };
 
     const progressPct = Math.round((completed.length / TOPICS.length) * 100);
