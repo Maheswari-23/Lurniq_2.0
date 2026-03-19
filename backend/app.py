@@ -1477,7 +1477,78 @@ def update_pod_task(pod_id):
     
     return jsonify({"success": True}), 200
 
+
+# ── Pod Task CRUD (Creator only) ──────────────────────────────────────────────
+
+@app.route('/api/pods/<pod_id>/tasks/add', methods=['POST'])
+@jwt_required()
+def add_pod_task(pod_id):
+    user_id = get_jwt_identity()
+    db = get_db()
+    data = request.get_json(silent=True) or {}
+    task_text = data.get('task', '').strip()
+    if not task_text:
+        return jsonify({"success": False, "error": "Task text required"}), 400
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+    if not pod or user_id not in pod.get("members", []):
+        return jsonify({"success": False, "error": "Access denied"}), 403
+    new_task = {"id": f"t_{ObjectId()}", "task": task_text}
+    db.pods.update_one({"_id": pod["_id"]}, {"$push": {"daily_tasks": new_task}})
+    return jsonify({"success": True, "task": new_task}), 201
+
+
+@app.route('/api/pods/<pod_id>/tasks/<task_id>', methods=['PUT', 'DELETE'])
+@jwt_required()
+def manage_pod_task(pod_id, task_id):
+    user_id = get_jwt_identity()
+    db = get_db()
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+    if not pod or user_id not in pod.get("members", []):
+        return jsonify({"success": False, "error": "Access denied"}), 403
+
+    if request.method == 'DELETE':
+        db.pods.update_one({"_id": pod["_id"]}, {"$pull": {"daily_tasks": {"id": task_id}}})
+        # Also clean up completions for the deleted task
+        db.pods.update_one({"_id": pod["_id"]}, {"$unset": {f"task_completions.{task_id}": ""}})
+        return jsonify({"success": True}), 200
+
+    if request.method == 'PUT':
+        data = request.get_json(silent=True) or {}
+        new_text = data.get('task', '').strip()
+        if not new_text:
+            return jsonify({"success": False, "error": "Task text required"}), 400
+        db.pods.update_one(
+            {"_id": pod["_id"], "daily_tasks.id": task_id},
+            {"$set": {"daily_tasks.$.task": new_text}}
+        )
+        return jsonify({"success": True}), 200
+
+
+@app.route('/api/pods/<pod_id>/goals', methods=['PUT'])
+@jwt_required()
+def update_pod_goals(pod_id):
+    user_id = get_jwt_identity()
+    db = get_db()
+    data = request.get_json(silent=True) or {}
+    goals = data.get('goals', '').strip()
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+    if not pod or user_id not in pod.get("members", []):
+        return jsonify({"success": False, "error": "Access denied"}), 403
+    db.pods.update_one({"_id": pod["_id"]}, {"$set": {"goals": goals}})
+    return jsonify({"success": True}), 200
+
+
 if __name__ == '__main__':
+
     print("\n" + "="*60)
     print("VARK LEARNING STYLE PREDICTOR API  (Phase 1 + Phase 2)")
     print("="*60)

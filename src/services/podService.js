@@ -62,3 +62,42 @@ export const toggleTask = async (pod_id, task_id, completed) => {
     if (!res.ok) throw new Error("Error toggling task");
     return res.json();
 };
+
+export const addTask = async (pod_id, task) => {
+    const res = await fetch(`${API_BASE_URL}/pods/${pod_id}/tasks/add`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ task })
+    });
+    if (!res.ok) throw new Error("Error adding task");
+    return res.json();
+};
+
+export const editTask = async (pod_id, task_id, task) => {
+    const res = await fetch(`${API_BASE_URL}/pods/${pod_id}/tasks/${task_id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ task })
+    });
+    if (!res.ok) throw new Error("Error editing task");
+    return res.json();
+};
+
+export const deleteTask = async (pod_id, task_id) => {
+    const res = await fetch(`${API_BASE_URL}/pods/${pod_id}/tasks/${task_id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+    });
+    if (!res.ok) throw new Error("Error deleting task");
+    return res.json();
+};
+
+export const updateGoals = async (pod_id, goals) => {
+    const res = await fetch(`${API_BASE_URL}/pods/${pod_id}/goals`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ goals })
+    });
+    if (!res.ok) throw new Error("Error updating goals");
+    return res.json();
+};
