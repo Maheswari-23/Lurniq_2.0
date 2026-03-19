@@ -60,6 +60,7 @@ const LearningContent = () => {
 
     const [varkData, setVarkData] = useState(DEFAULT_VARK);
     const [activeModality, setActiveModality] = useState(DEFAULT_VARK.style);
+    const [activePersona, setActivePersona] = useState('Default');
     const [selectedTopic, setSelectedTopic] = useState(null);
     const [activeCategory, setActiveCategory] = useState('All');
     const [search, setSearch] = useState('');
@@ -200,6 +201,24 @@ const LearningContent = () => {
                             </select>
                             <ChevronDown size={11} style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', opacity: 0.45 }} />
                         </div>
+
+                        <span className="lvs-heading" style={{ marginTop: '12px', display: 'block' }}>Context / Persona</span>
+                        <div style={{ position: 'relative', display: 'inline-block', marginTop: '4px' }}>
+                            <select
+                                className="vark-switcher"
+                                value={activePersona}
+                                onChange={e => setActivePersona(e.target.value)}
+                                style={{
+                                    border: `2px solid #E5E7EB`,
+                                    color: '#374151',
+                                    background: 'white',
+                                }}
+                                title="Switch your learning context"
+                            >
+                                {['Default', 'Cricket', 'Cooking', 'Space', 'Gaming', 'Superheroes'].map(p => <option key={p} value={p}>{p === 'Default' ? 'Default Context' : `${p} Metaphors`}</option>)}
+                            </select>
+                            <ChevronDown size={11} style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', opacity: 0.45 }} />
+                        </div>
                     </div>
                     <div className="lvs-bars">
                         {Object.entries(probs).map(([style, prob]) => (
@@ -310,11 +329,12 @@ const LearningContent = () => {
                     modality={activeModality}
                     varkProbs={probs}
                     onClose={handleViewerClose}
+                    persona={activePersona}
                 />
             )}
 
             {/* Floating AI Chatbot */}
-            <AIChatbot varkStyle={activeModality} />
+            <AIChatbot varkStyle={activeModality} persona={activePersona} />
         </div>
     );
 };

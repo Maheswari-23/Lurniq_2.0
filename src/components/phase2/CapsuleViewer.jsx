@@ -731,7 +731,7 @@ function buildFallbackCapsule(topic, modality) {
 // ---------------------------------------------------------------------------
 // CapsuleViewer component
 // ---------------------------------------------------------------------------
-const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs, onClose }) => {
+const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs, onClose, persona = 'Default' }) => {
     const [phase, setPhase] = useState('loading');
     const [capsule, setCapsule] = useState(null);
     const [error, setError] = useState(null);
@@ -759,7 +759,7 @@ const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs
         // Step 2: Try Flask in background
         (async () => {
             try {
-                const data = await generateCapsule(topic, activeModality, 1);
+                const data = await generateCapsule(topic, activeModality, 1, persona);
                 const RICH_FIELDS = ['diagram', 'narrative', 'challenge', 'definition', 'syntax', 'color_code'];
                 const hasRichContent = data?.content &&
                     RICH_FIELDS.some(f => data.content[f] && (
@@ -774,7 +774,7 @@ const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs
         })();
 
         return () => { cancelled = true; };
-    }, [topic, activeModality]);
+    }, [topic, activeModality, persona]);
 
     // Lock body scroll
     useEffect(() => {

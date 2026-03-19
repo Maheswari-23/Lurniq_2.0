@@ -18,7 +18,7 @@ function slugify(text) {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40);
 }
 
-const AIChatbot = ({ varkStyle = 'Visual' }) => {
+const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default' }) => {
     const [open, setOpen] = useState(false);
     const [messages, setMessages] = useState([
         { role: 'bot', text: `Hi! I'm your Lurniq AI tutor 👋 Ask me anything — I'll explain it in a **${varkStyle}** way just for you.` }
@@ -55,7 +55,7 @@ const AIChatbot = ({ varkStyle = 'Visual' }) => {
             const res = await fetch(`${API_BASE_URL}/chatbot`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('lurniq_token')}` },
-                body: JSON.stringify({ question: q, vark_style: varkStyle }),
+                body: JSON.stringify({ question: q, vark_style: varkStyle, persona }),
             });
             if (!res.ok) throw new Error('Server error');
             const data = await res.json();

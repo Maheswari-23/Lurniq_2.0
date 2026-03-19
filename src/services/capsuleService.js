@@ -10,11 +10,11 @@ import API_BASE_URL from '../config.js';
  * @param {number} difficulty - difficulty level (default: 1)
  * @returns {Promise<object>} capsule response from backend
  */
-export async function generateCapsule(topic, modality, difficulty = 1) {
+export async function generateCapsule(topic, modality, difficulty = 1, persona = 'Default') {
     const response = await fetch(`${API_BASE_URL}/capsule/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, modality, difficulty }),
+        body: JSON.stringify({ topic, modality, difficulty, persona }),
     });
 
     if (!response.ok) {

@@ -26,9 +26,21 @@
     // does not hide new deployments.
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then((regs) => {
-        regs.forEach((reg) => reg.unregister());
+        let hasRegs = regs.length > 0;
+        for (let reg of regs) {
+          reg.unregister();
+        }
+        if (hasRegs) {
+          caches.keys().then((keys) => {
+            Promise.all(keys.map((k) => caches.delete(k))).then(() => {
+              if (!sessionStorage.getItem('sw_cleared')) {
+                sessionStorage.setItem('sw_cleared', '1');
+                window.location.reload();
+              }
+            });
+          });
+        }
       });
-      caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
     }
   </script>
 </body>

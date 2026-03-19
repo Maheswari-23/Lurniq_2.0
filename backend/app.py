@@ -7,6 +7,16 @@ import pickle
 import os
 import re
 import math
+import json
+from groq import Groq
+
+# Initialize Groq client
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+try:
+    groq_client = Groq(api_key=GROQ_API_KEY)
+except Exception as e:
+    print("Failed to initialize Groq client:", e)
+    groq_client = None
 
 # ── Auth / DB dependencies ─────────────────────────────────────────
 from dotenv import load_dotenv
@@ -302,6 +312,25 @@ def chatbot():
     data = request.get_json(silent=True) or {}
     question = data.get('question', '').strip().lower()
     vark_style = data.get('vark_style', 'Visual')
+    persona = data.get('persona', 'Default').strip()
+
+    if groq_client:
+        try:
+            persona_prompt = "Explain in a standard educational format." if persona == 'Default' else f"Explain using {persona} analogies and terms."
+            system_prompt = f"You are a helpful AI Computer Science tutor. The student is a '{vark_style}' learner. {persona_prompt} Keep your answer concise (under 150 words) and directly address the user's question without any markdown formatting."
+            
+            chat_completion = groq_client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": question}
+                ],
+                model="llama-3.3-70b-versatile",
+                temperature=0.7,
+            )
+            answer = chat_completion.choices[0].message.content
+            return jsonify({'answer': answer, 'vark_style': vark_style, 'persona': persona}), 200
+        except Exception as e:
+            print("Groq generated chatbot error:", e)
 
     # Curated VARK-tailored answer bank
     ANSWERS = {
@@ -1065,9 +1094,40 @@ def generate_capsule():
         topic      = data.get("topic", "").lower().strip()
         modality   = data.get("modality", "Visual").strip()
         difficulty = int(data.get("difficulty", 1))
+        persona    = data.get("persona", "Default").strip()
 
-        # Retrieve template from bank (fallback to default)
-        template = CAPSULE_TEMPLATES.get((topic, modality), DEFAULT_TEMPLATE.copy())
+        template = None
+        if groq_client:
+            # Generate personalized template via Groq
+            base_template = CAPSULE_TEMPLATES.get((topic, modality), DEFAULT_TEMPLATE.copy())
+            persona_instruction = "Use standard educational terms." if persona == 'Default' else f"You MUST strictly explain this using '{persona}' analogies and terms."
+            
+            system_prompt = f"""You are an educational AI. Generate a JSON response for a micro-learning capsule about '{topic}'. 
+The learner style is '{modality}'.
+{persona_instruction}
+Your response MUST be raw JSON that matches this structure exactly, filling in the content with the appropriate theme:
+{json.dumps(base_template, indent=2)}
+
+Do NOT wrap the JSON in markdown blocks (e.g. ```json). Output ONLY the raw JSON object.
+"""
+            try:
+                completion = groq_client.chat.completions.create(
+                    messages=[{"role": "system", "content": system_prompt}],
+                    model="llama-3.3-70b-versatile",
+                    temperature=0.7,
+                )
+                raw_json = completion.choices[0].message.content.strip()
+                if raw_json.startswith("```json"):
+                    raw_json = raw_json[7:-3].strip()
+                elif raw_json.startswith("```"):
+                    raw_json = raw_json[3:-3].strip()
+                template = json.loads(raw_json)
+            except Exception as e:
+                print("Groq generate_capsule error:", e)
+
+        if not template:
+            # Retrieve template from bank (fallback to default)
+            template = CAPSULE_TEMPLATES.get((topic, modality), DEFAULT_TEMPLATE.copy())
 
         # --- Stage 1 Verification ---
         s1_passed, s1_issues = stage1_verify(template)
