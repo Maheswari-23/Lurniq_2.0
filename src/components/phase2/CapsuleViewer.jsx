@@ -715,6 +715,13 @@ function buildFallbackCapsule(topic, modality) {
                 },
             };
         }
+        
+        content.quiz = [
+            { q: `What is the main concept discussed regarding "${label}"?`, options: [label, 'Variables', 'Loops', 'Functions'], answer: 0 },
+            { q: `Is "${label}" helpful for solving programming problems?`, options: ['Yes, definitely', 'No', 'Only sometimes', 'I am not sure'], answer: 0 },
+            { q: `Which learning modality is this presented in?`, options: ['Visual', 'Auditory', 'Reading', 'Kinesthetic'], answer: ['Visual', 'Auditory', 'Reading', 'Kinesthetic'].indexOf(modality) }
+        ];
+
         return { success: true, learning_objective: content.learning_objective, modality, difficulty: 2, content, confidence_score: 0.75, verified: true };
     }
 
@@ -879,7 +886,7 @@ const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs
                         <>
                             <h3 className="cv-quiz-heading">Quick Check</h3>
                             <p className="cv-quiz-sub">Test what you have just studied.</p>
-                            <QuizBlock topic={topic} modality={activeModality} onComplete={handleQuizComplete} />
+                            <QuizBlock topic={topic} modality={activeModality} onComplete={handleQuizComplete} quizData={capsule?.content?.quiz} />
                         </>
                     )}
 

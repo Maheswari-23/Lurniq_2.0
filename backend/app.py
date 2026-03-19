@@ -1103,6 +1103,14 @@ def generate_capsule():
         if groq_client:
             # Generate personalized template via Groq
             base_template = CAPSULE_TEMPLATES.get((topic, modality), DEFAULT_TEMPLATE.copy())
+            
+            # Request dynamic quizzes for all topics generated via AI
+            base_template["quiz"] = [
+                {"q": "Generate a multiple choice question about the topic", "options": ["Option A", "Option B", "Option C", "Option D"], "answer": 0},
+                {"q": "Generate another multiple choice question", "options": ["Option A", "Option B", "Option C", "Option D"], "answer": 1},
+                {"q": "Generate a third multiple choice question", "options": ["Option A", "Option B", "Option C", "Option D"], "answer": 2}
+            ]
+            
             persona_instruction = "Use standard educational terms." if persona == 'Default' else f"You MUST strictly explain this using '{persona}' analogies and terms."
             
             system_prompt = f"""You are an educational AI. Generate a JSON response for a micro-learning capsule about '{topic}'. 

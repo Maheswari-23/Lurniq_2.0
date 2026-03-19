@@ -236,9 +236,9 @@ const FALLBACK_QUESTIONS = [
 
 // ---------------------------------------------------------------------------
 
-const QuizBlock = ({ topic, modality, onComplete }) => {
+const QuizBlock = ({ topic, modality, onComplete, quizData }) => {
     const key = `${topic}_${modality}`.toLowerCase();
-    const questions = QUESTION_BANK[key] ?? FALLBACK_QUESTIONS;
+    const questions = (quizData && quizData.length > 0) ? quizData : (QUESTION_BANK[key] ?? FALLBACK_QUESTIONS);
 
     const [currentQ, setCurrentQ] = useState(0);
     const [selected, setSelected] = useState(null);
