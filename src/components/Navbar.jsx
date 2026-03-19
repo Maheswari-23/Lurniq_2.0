@@ -35,6 +35,7 @@ const Navbar = () => {
         <div style={s.links} className="nb-desktop">
           <NavLink to="/learning" style={({ isActive }) => activeLink(isActive)}>Learning Hub</NavLink>
           <NavLink to="/questionnaire" style={({ isActive }) => activeLink(isActive)}>Retake VARK</NavLink>
+          <NavLink to="/pods" style={({ isActive }) => activeLink(isActive)}>Study Pods</NavLink>
           <NavLink to="/profile" style={({ isActive }) => activeLink(isActive)}>Profile</NavLink>
           {currentUser && (
             <>
@@ -56,6 +57,7 @@ const Navbar = () => {
         <div style={{ background: 'white', borderTop: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <NavLink to="/learning" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Learning Hub</NavLink>
           <NavLink to="/questionnaire" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Retake VARK</NavLink>
+          <NavLink to="/pods" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Study Pods</NavLink>
           <NavLink to="/profile" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Profile</NavLink>
           {currentUser && (
             <>
