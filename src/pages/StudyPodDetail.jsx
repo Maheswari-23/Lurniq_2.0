@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getPodDetails, getChatHistory, sendChatMessage, toggleTask } from '../services/podService';
 import { useAuth } from '../context/AuthContext';
-import { Loader2, Send, CheckCircle2, Circle, ArrowLeft, Target, Trophy } from 'lucide-react';
+import { Loader2, Send, CheckCircle2, Circle, ArrowLeft, Target, Trophy, Video, KanbanSquare, Bot } from 'lucide-react';
+import PodVideoCall from '../components/phase2/PodVideoCall';
+import AIChatbot from '../components/AIChatbot';
 
 const StudyPodDetail = () => {
     const { podId } = useParams();
@@ -13,6 +15,7 @@ const StudyPodDetail = () => {
     const [chat, setChat] = useState([]);
     const [msg, setMsg] = useState('');
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'call', 'learn'
     
     const chatRef = useRef(null);
 
@@ -101,6 +104,15 @@ const StudyPodDetail = () => {
         badge: { background: '#F3F4F6', padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 500, color: '#4B5563' },
         progressBarBg: { height: '12px', background: '#F3F4F6', borderRadius: '10px', overflow: 'hidden', marginTop: '8px' },
         progressBarFill: { height: '100%', background: 'linear-gradient(90deg, #F97AFE, #7B61FF)', transition: 'width 0.5s ease-out' },
+        tabs: { display: 'flex', gap: '8px', marginBottom: '24px', flexShrink: 0 },
+        tab: (isActive) => ({
+            padding: '10px 20px', borderRadius: '12px', border: 'none',
+            background: isActive ? '#7B61FF' : 'white',
+            color: isActive ? 'white' : '#4B5563',
+            fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+            boxShadow: isActive ? '0 4px 12px rgba(123, 97, 255, 0.2)' : '0 1px 2px rgba(0,0,0,0.05)',
+            display: 'flex', alignItems: 'center', gap: '8px'
+        }),
         main: { display: 'flex', gap: '24px', flex: 1, minHeight: 0 },
         leftPanel: { flex: 1, display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto', paddingRight: '4px' },
         card: { background: 'white', border: '1px solid #E5E7EB', borderRadius: '16px', padding: '24px' },
@@ -137,53 +149,79 @@ const StudyPodDetail = () => {
 
             <div style={s.main}>
                 <div style={s.leftPanel}>
-                    <div style={s.card}>
-                        <h2 style={s.cardTitle}><Target size={20} color="#7B61FF" /> Shared Goals</h2>
-                        <p style={{ margin: 0, color: '#4B5563', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                            {pod.goals || "No goals set. Work together and conquer!"}
-                        </p>
+                    <div style={s.tabs}>
+                        <button style={s.tab(activeTab === 'dashboard')} onClick={() => setActiveTab('dashboard')}>
+                            <KanbanSquare size={18} /> Dashboard
+                        </button>
+                        <button style={s.tab(activeTab === 'call')} onClick={() => setActiveTab('call')}>
+                            <Video size={18} /> Video Call
+                        </button>
+                        <button style={s.tab(activeTab === 'learn')} onClick={() => setActiveTab('learn')}>
+                            <Bot size={18} /> Learning Hub
+                        </button>
                     </div>
 
-                    <div style={s.card}>
-                        <h2 style={s.cardTitle}><CheckCircle2 size={20} color="#10B981" /> Daily Tasks</h2>
-                        <div>
-                            {pod.daily_tasks.map(task => {
-                                const completedBy = pod.task_completions[task.id] || [];
-                                const isCompletedByMe = completedBy.includes(myId);
-                                
-                                return (
-                                    <div 
-                                        key={task.id} 
-                                        style={s.taskRow}
-                                        onClick={() => handleToggleTask(task.id, isCompletedByMe)}
-                                    >
-                                        {isCompletedByMe ? <CheckCircle2 size={22} color="#10B981" /> : <Circle size={22} color="#D1D5DB" />}
-                                        <div style={{ flex: 1 }}>
-                                            <span style={{ fontSize: '15px', color: isCompletedByMe ? '#6B7280' : '#111827', textDecoration: isCompletedByMe ? 'line-through' : 'none' }}>
-                                                {task.task}
-                                            </span>
-                                            <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
-                                                {completedBy.map(uid => (
-                                                    <span key={uid} style={{ fontSize: '10px', background: '#D1FAE5', color: '#065F46', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>
-                                                        {pod.members[uid]?.split(' ')[0] || 'User'}
+                    {activeTab === 'dashboard' && (
+                        <>
+                            <div style={s.card}>
+                                <h2 style={s.cardTitle}><Target size={20} color="#7B61FF" /> Shared Goals</h2>
+                                <p style={{ margin: 0, color: '#4B5563', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                                    {pod.goals || "No goals set. Work together and conquer!"}
+                                </p>
+                            </div>
+
+                            <div style={s.card}>
+                                <h2 style={s.cardTitle}><CheckCircle2 size={20} color="#10B981" /> Daily Tasks</h2>
+                                <div>
+                                    {pod.daily_tasks.map(task => {
+                                        const completedBy = pod.task_completions[task.id] || [];
+                                        const isCompletedByMe = completedBy.includes(myId);
+                                        
+                                        return (
+                                            <div 
+                                                key={task.id} 
+                                                style={s.taskRow}
+                                                onClick={() => handleToggleTask(task.id, isCompletedByMe)}
+                                            >
+                                                {isCompletedByMe ? <CheckCircle2 size={22} color="#10B981" /> : <Circle size={22} color="#D1D5DB" />}
+                                                <div style={{ flex: 1 }}>
+                                                    <span style={{ fontSize: '15px', color: isCompletedByMe ? '#6B7280' : '#111827', textDecoration: isCompletedByMe ? 'line-through' : 'none' }}>
+                                                        {task.task}
                                                     </span>
-                                                ))}
+                                                    <div style={{ display: 'flex', gap: '6px', marginTop: '6px', flexWrap: 'wrap' }}>
+                                                        {completedBy.map(uid => (
+                                                            <span key={uid} style={{ fontSize: '10px', background: '#D1FAE5', color: '#065F46', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>
+                                                                {pod.members[uid]?.split(' ')[0] || 'User'}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
 
-                    <div style={s.card}>
-                        <h2 style={s.cardTitle}><Trophy size={20} color="#F59E0B" /> Weekly Challenge</h2>
-                        <div style={{ background: '#FFFBEB', border: '1px solid #FEF3C7', padding: '16px', borderRadius: '12px' }}>
-                            <p style={{ margin: 0, color: '#92400E', fontWeight: 500 }}>
-                                {pod.weekly_challenge || "No active challenge this week."}
-                            </p>
+                            <div style={s.card}>
+                                <h2 style={s.cardTitle}><Trophy size={20} color="#F59E0B" /> Weekly Challenge</h2>
+                                <div style={{ background: '#FFFBEB', border: '1px solid #FEF3C7', padding: '16px', borderRadius: '12px' }}>
+                                    <p style={{ margin: 0, color: '#92400E', fontWeight: 500 }}>
+                                        {pod.weekly_challenge || "No active challenge this week."}
+                                    </p>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {activeTab === 'call' && (
+                        <PodVideoCall podCode={pod.pod_code} userName={currentUser.name} />
+                    )}
+
+                    {activeTab === 'learn' && (
+                        <div style={{ flex: 1, display: 'flex' }}>
+                            <AIChatbot inline={true} />
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 <div style={s.rightPanel}>

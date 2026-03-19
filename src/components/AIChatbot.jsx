@@ -18,8 +18,8 @@ function slugify(text) {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40);
 }
 
-const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default' }) => {
-    const [open, setOpen] = useState(false);
+const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default', inline = false }) => {
+    const [open, setOpen] = useState(inline ? true : false);
     const [messages, setMessages] = useState([
         { role: 'bot', text: `Hi! I'm your Lurniq AI tutor 👋 Ask me anything — I'll explain it in a **${varkStyle}** way just for you.` }
     ]);
@@ -79,26 +79,33 @@ const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default' }) => {
     return (
         <>
             {/* Floating toggle button */}
-            <button
-                onClick={() => setOpen(o => !o)}
-                title="Ask AI Tutor"
-                style={{
-                    position: 'fixed', bottom: '24px', right: '24px', zIndex: 1000,
-                    width: '56px', height: '56px', borderRadius: '50%',
-                    background: 'linear-gradient(135deg,#F97AFE,#7B61FF)',
-                    border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(123,97,255,0.4)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'transform 0.2s',
-                }}
-                onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
-                onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-            >
-                {open ? <X size={22} color="white" /> : <MessageCircle size={22} color="white" />}
-            </button>
+            {!inline && (
+                <button
+                    onClick={() => setOpen(o => !o)}
+                    title="Ask AI Tutor"
+                    style={{
+                        position: 'fixed', bottom: '24px', right: '24px', zIndex: 1000,
+                        width: '56px', height: '56px', borderRadius: '50%',
+                        background: 'linear-gradient(135deg,#F97AFE,#7B61FF)',
+                        border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(123,97,255,0.4)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'transform 0.2s',
+                    }}
+                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                    {open ? <X size={22} color="white" /> : <MessageCircle size={22} color="white" />}
+                </button>
+            )}
 
             {/* Chat panel */}
             {open && (
-                <div style={{
+                <div style={inline ? {
+                    width: '100%', height: '100%', minHeight: '500px',
+                    background: 'white', borderRadius: '16px', border: '1px solid #E5E7EB',
+                    display: 'flex', flexDirection: 'column',
+                    fontFamily: "'Poppins', sans-serif"
+                } : {
                     position: 'fixed', bottom: '92px', right: '24px', zIndex: 999,
                     width: '340px', maxHeight: '520px',
                     background: 'white', borderRadius: '20px',
