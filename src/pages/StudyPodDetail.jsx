@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import {
     Loader2, Send, CheckCircle2, Circle, ArrowLeft, Target, Trophy,
     Video, KanbanSquare, Bot, Plus, Pencil, Trash2, Check, X, Save,
-    MessageCircle, BookOpen, ChevronDown, ChevronUp
+    MessageCircle, BookOpen, ChevronDown, ChevronUp, Copy
 } from 'lucide-react';
 import PodVideoCall from '../components/phase2/PodVideoCall';
 import AIChatbot from '../components/AIChatbot';
@@ -58,9 +58,9 @@ const FloatingChat = ({ chat, onSend, chatRef }) => {
                 style={{
                     position: 'fixed', bottom: '90px', right: '24px', zIndex: 1001,
                     width: '56px', height: '56px', borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #10B981, #059669)',
+                    background: 'linear-gradient(135deg, #F97AFE, #7B61FF)',
                     border: 'none', cursor: 'pointer',
-                    boxShadow: '0 4px 20px rgba(16,185,129,0.4)',
+                    boxShadow: '0 4px 20px rgba(123,97,255,0.4)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'transform 0.2s',
                 }}
@@ -91,7 +91,7 @@ const FloatingChat = ({ chat, onSend, chatRef }) => {
                 }}>
                     <style>{`@keyframes chatPop{from{opacity:0;transform:scale(0.85) translateY(16px)}to{opacity:1;transform:none}}`}</style>
                     {/* Header */}
-                    <div style={{ padding: '14px 16px', background: 'linear-gradient(90deg,#10B981,#059669)', borderRadius: '20px 20px 0 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ padding: '14px 16px', background: 'linear-gradient(90deg,#F97AFE,#7B61FF)', borderRadius: '20px 20px 0 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <MessageCircle size={18} color="white" />
                         <span style={{ color: 'white', fontWeight: 700, fontSize: '14px' }}>Group Chat</span>
                     </div>
@@ -102,7 +102,7 @@ const FloatingChat = ({ chat, onSend, chatRef }) => {
                             <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: m.isMe ? 'flex-end' : 'flex-start' }}>
                                 {!m.isMe && <span style={{ fontSize: '10px', color: '#6B7280', marginBottom: '3px' }}>{m.sender_name}</span>}
                                 <div style={{
-                                    background: m.isMe ? 'linear-gradient(90deg,#10B981,#059669)' : '#F3F4F6',
+                                    background: m.isMe ? 'linear-gradient(90deg,#F97AFE,#7B61FF)' : '#F3F4F6',
                                     color: m.isMe ? 'white' : '#111827',
                                     padding: '9px 13px', borderRadius: '14px',
                                     borderBottomRightRadius: m.isMe ? '4px' : '14px',
@@ -119,7 +119,7 @@ const FloatingChat = ({ chat, onSend, chatRef }) => {
                             placeholder="Type a message…"
                             style={{ flex: 1, border: '1.5px solid #E5E7EB', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
                         />
-                        <button type="submit" disabled={!msg.trim()} style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(90deg,#10B981,#059669)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: !msg.trim() ? 0.5 : 1 }}>
+                        <button type="submit" disabled={!msg.trim()} style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(90deg,#F97AFE,#7B61FF)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: !msg.trim() ? 0.5 : 1 }}>
                             <Send size={15} color="white" />
                         </button>
                     </form>
@@ -226,6 +226,7 @@ const StudyPodDetail = () => {
     // Boss Battle State
     const [showBattle, setShowBattle] = useState(false);
     const [startingBattle, setStartingBattle] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     const chatRef = useRef(null);
     const myId = currentUser?._id || currentUser?.id;
@@ -265,6 +266,12 @@ const StudyPodDetail = () => {
         } finally {
             setStartingBattle(false);
         }
+    };
+
+    const handleCopyCode = () => {
+        navigator.clipboard.writeText(pod.pod_code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
 
     const handleToggleTask = async (taskId, isCompleted) => {
@@ -322,7 +329,17 @@ const StudyPodDetail = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <button onClick={() => navigate('/pods')} style={{ cursor: 'pointer', background: '#F3F4F6', border: 'none', padding: '8px', borderRadius: '50%', display: 'flex' }}><ArrowLeft size={20} color="#4B5563" /></button>
                     <h1 style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: '#111827' }}>{pod.name}</h1>
-                    <span style={{ background: '#F3F4F6', padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 500, color: '#4B5563' }}>Code: {pod.pod_code}</span>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', background: '#F3F4F6', padding: '4px 8px 4px 12px', borderRadius: '20px', gap: '8px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 500, color: '#4B5563' }}>Code: <strong>{pod.pod_code}</strong></span>
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <button onClick={handleCopyCode} style={{ background: 'transparent', border: 'none', padding: '2px', cursor: 'pointer', display: 'flex', color: copied ? '#10B981' : '#6B7280', transition: 'color 0.2s' }} title="Copy Code">
+                                {copied ? <Check size={14} /> : <Copy size={14} />}
+                            </button>
+                            {copied && <span style={{ position: 'absolute', top: '-24px', left: '50%', transform: 'translateX(-50%)', background: '#111827', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>Copied!</span>}
+                        </div>
+                    </div>
+
                     <span style={{ background: '#F3F4F6', padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 500, color: '#4B5563' }}>{memberCount} Members</span>
                     
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
@@ -366,7 +383,7 @@ const StudyPodDetail = () => {
                                     {!editingGoals
                                         ? <button style={btnSm('#7B61FF')} onClick={() => { setGoalsText(pod.goals || ''); setEditingGoals(true); }}><Pencil size={16} /></button>
                                         : <div style={{ display: 'flex', gap: '6px' }}>
-                                            <button style={btnSm('#10B981')} onClick={handleSaveGoals}><Save size={16} /></button>
+                                            <button style={btnSm('#7B61FF')} onClick={handleSaveGoals}><Save size={16} /></button>
                                             <button style={btnSm('#EF4444')} onClick={() => setEditingGoals(false)}><X size={16} /></button>
                                           </div>
                                     }
@@ -380,8 +397,8 @@ const StudyPodDetail = () => {
                             {/* Daily Tasks */}
                             <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '16px', padding: '24px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                                    <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', color: '#111827' }}><CheckCircle2 size={20} color="#10B981" /> Daily Tasks</h2>
-                                    <button onClick={() => setShowAddTask(p => !p)} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#F0FDF4', color: '#059669', border: '1px solid #A7F3D0', borderRadius: '8px', padding: '5px 12px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
+                                    <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', color: '#111827' }}><CheckCircle2 size={20} color="#7B61FF" /> Daily Tasks</h2>
+                                    <button onClick={() => setShowAddTask(p => !p)} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#F3E8FF', color: '#7B61FF', border: '1px solid #E9D5FF', borderRadius: '8px', padding: '5px 12px', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>
                                         <Plus size={15} /> Add Task
                                     </button>
                                 </div>
@@ -401,7 +418,7 @@ const StudyPodDetail = () => {
                                         return (
                                             <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: '#F9FAFB', borderRadius: '8px', marginBottom: '8px' }}>
                                                 <div style={{ cursor: 'pointer', flexShrink: 0 }} onClick={() => !isEditing && handleToggleTask(task.id, isCompletedByMe)}>
-                                                    {isCompletedByMe ? <CheckCircle2 size={22} color="#10B981" /> : <Circle size={22} color="#D1D5DB" />}
+                                                    {isCompletedByMe ? <CheckCircle2 size={22} color="#7B61FF" /> : <Circle size={22} color="#D1D5DB" />}
                                                 </div>
                                                 <div style={{ flex: 1 }}>
                                                     {isEditing
@@ -411,7 +428,7 @@ const StudyPodDetail = () => {
                                                             <span style={{ fontSize: '15px', color: isCompletedByMe ? '#6B7280' : '#111827', textDecoration: isCompletedByMe ? 'line-through' : 'none' }}>{task.task}</span>
                                                             <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
                                                                 {completedBy.map(uid => (
-                                                                    <span key={uid} style={{ fontSize: '10px', background: '#D1FAE5', color: '#065F46', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>{pod.members[uid]?.split(' ')[0] || 'User'}</span>
+                                                                    <span key={uid} style={{ fontSize: '10px', background: '#F3E8FF', color: '#6B21A8', padding: '2px 6px', borderRadius: '10px', fontWeight: 600 }}>{pod.members[uid]?.split(' ')[0] || 'User'}</span>
                                                                 ))}
                                                             </div>
                                                           </>
@@ -419,7 +436,7 @@ const StudyPodDetail = () => {
                                                 </div>
                                                 <div style={{ display: 'flex', gap: '2px', flexShrink: 0 }}>
                                                     {isEditing
-                                                        ? <><button style={btnSm('#10B981')} onClick={() => handleEditTask(task.id)}><Check size={16} /></button><button style={btnSm('#EF4444')} onClick={() => setEditingTaskId(null)}><X size={16} /></button></>
+                                                        ? <><button style={btnSm('#7B61FF')} onClick={() => handleEditTask(task.id)}><Check size={16} /></button><button style={btnSm('#EF4444')} onClick={() => setEditingTaskId(null)}><X size={16} /></button></>
                                                         : <><button style={btnSm('#7B61FF')} onClick={() => { setEditingTaskId(task.id); setEditingTaskText(task.task); }}><Pencil size={14} /></button><button style={btnSm('#EF4444')} onClick={() => handleDeleteTask(task.id)}><Trash2 size={14} /></button></>
                                                     }
                                                 </div>
