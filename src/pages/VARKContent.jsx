@@ -433,9 +433,18 @@ const VARKContent = () => {
 
   return (
     <div className="vark-container">
-      <div className="vark-header">
+      <div className="vark-header" style={{ marginBottom: '24px' }}>
         <h1 className="gradient-text">VARK Learning Styles</h1>
         <p className="subtitle">Discover the Water Cycle through Different Learning Approaches</p>
+      </div>
+
+      <div style={{ background: 'linear-gradient(135deg, #7B61FF15, #F97AFE15)', border: '1.5px dashed #7B61FF60', borderRadius: '16px', padding: '24px', margin: '0 20px 40px', textAlign: 'center', boxShadow: '0 8px 24px rgba(123, 97, 255, 0.05)' }}>
+        <h3 style={{ margin: '0 0 10px', color: '#111827', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '24px' }}>🕵️</span> We're secretly studying YOU!
+        </h3>
+        <p style={{ margin: 0, color: '#4B5563', fontSize: '15px', lineHeight: '1.6', maxWidth: '700px', display: 'inline-block' }}>
+          Because this is your <strong>cold start</strong>, our AI is quietly monitoring how you interact with the content below. <strong>Click, scroll, dragging, or watching</strong>—choose the section that feels most natural to you. We'll use this data to magically personalize your entire learning journey! ✨
+        </p>
       </div>
 
       <div className="vark-grid">
