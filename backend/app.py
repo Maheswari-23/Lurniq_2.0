@@ -1104,6 +1104,9 @@ def generate_capsule():
             # Generate personalized template via Groq
             base_template = CAPSULE_TEMPLATES.get((topic, modality), DEFAULT_TEMPLATE.copy())
             
+            if modality == "Visual":
+                base_template["mermaid"] = "graph TD\n  A[Start] --> B[Generate full valid Mermaid.js flowchart code for this topic]"
+            
             # Request dynamic quizzes for all topics generated via AI
             base_template["quiz"] = [
                 {"q": "Generate a multiple choice question about the topic", "options": ["Option A", "Option B", "Option C", "Option D"], "answer": 0},

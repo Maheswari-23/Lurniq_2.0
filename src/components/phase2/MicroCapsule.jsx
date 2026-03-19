@@ -1,10 +1,13 @@
 // src/components/phase2/MicroCapsule.jsx
 // Renders VARK-specific learning content. No decorative emoji — typographic hierarchy only.
 import React from 'react';
+import PyodideRunner from './PyodideRunner';
+
+import MermaidDiagram from './MermaidDiagram';
 
 // ── VISUAL ───────────────────────────────────────────────────────────────────
 const VisualContent = ({ content }) => {
-    const { diagram = [], color_code = [], steps = [], analogy = '', learning_objective = '' } = content;
+    const { diagram = [], mermaid = '', color_code = [], steps = [], analogy = '', learning_objective = '' } = content;
     return (
         <div className="mc-visual">
             <div className="mc-objective">
@@ -18,7 +21,12 @@ const VisualContent = ({ content }) => {
                 </div>
             )}
 
-            {diagram.length > 0 && (
+            {mermaid ? (
+                <div className="mc-mermaid-wrap">
+                    <h3 className="mc-section-title">Visual Layout</h3>
+                    <MermaidDiagram diagramCode={mermaid} />
+                </div>
+            ) : diagram.length > 0 && (
                 <div className="mc-diagram-wrap">
                     <h3 className="mc-section-title">Flow Diagram</h3>
                     <pre className="mc-ascii-diagram">{diagram.join('\n')}</pre>
@@ -242,21 +250,12 @@ const ReadWriteContent = ({ content }) => {
 
 // ── KINESTHETIC ───────────────────────────────────────────────────────────────
 const KinestheticContent = ({ content }) => {
-    const [userCode, setUserCode] = React.useState('');
     const [showHint, setShowHint] = React.useState(false);
     const [hintIndex, setHintIndex] = React.useState(0);
     const [showSolution, setShowSolution] = React.useState(false);
-    const [feedback, setFeedback] = React.useState(null);
 
     const { challenge = {}, analogy = '', learning_objective = '' } = content;
     const { instruction = '', starter = '', solution = '', hints = [] } = challenge;
-
-    React.useEffect(() => { setUserCode(starter || ''); }, [starter]);
-
-    const handleCheck = () => {
-        const norm = s => s.replace(/\s+/g, ' ').trim();
-        setFeedback(norm(userCode) === norm(solution) ? 'correct' : 'incorrect');
-    };
 
     const handleNextHint = () => {
         setShowHint(true);
@@ -282,17 +281,9 @@ const KinestheticContent = ({ content }) => {
                 </div>
                 <p className="mc-challenge-instruction">{instruction}</p>
 
-                <textarea
-                    className="mc-code-editor"
-                    value={userCode}
-                    onChange={e => { setUserCode(e.target.value); setFeedback(null); }}
-                    spellCheck={false}
-                    rows={Math.max((starter.match(/\n/g) || []).length + 2, 4)}
-                    aria-label="Code editor"
-                />
+                <PyodideRunner initialCode={starter} />
 
                 <div className="mc-challenge-controls">
-                    <button className="mc-btn mc-btn--check" onClick={handleCheck}>Check Answer</button>
                     {hints.length > 0 && (
                         <button className="mc-btn mc-btn--hint" onClick={handleNextHint}
                             disabled={showHint && hintIndex >= hints.length - 1}>
@@ -307,12 +298,6 @@ const KinestheticContent = ({ content }) => {
                 {showHint && hints[hintIndex] && (
                     <div className="mc-hint">
                         <strong>Hint {hintIndex + 1}/{hints.length}:</strong> {hints[hintIndex]}
-                    </div>
-                )}
-
-                {feedback && (
-                    <div className={`mc-kfeedback mc-kfeedback--${feedback}`}>
-                        {feedback === 'correct' ? 'Correct — well done.' : 'Not quite — review the hint and try again.'}
                     </div>
                 )}
 

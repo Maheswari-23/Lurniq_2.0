@@ -686,6 +686,7 @@ function buildFallbackCapsule(topic, modality) {
             content = {
                 learning_objective: `Understand "${label}" through a visual breakdown.`,
                 analogy: answer.slice(0, 200),
+                mermaid: `graph TD\n  A["${label}"] --> B["Concept Analysis"]\n  B --> C["Subcomponents"]\n  C --> D["Conclusion"]`,
                 diagram: answer.split('. ').slice(0, 5).map((s, i) => `  ${i + 1}. ${s.trim()}`),
                 steps: answer.split('. ').slice(0, 4).map(s => s.trim()).filter(Boolean),
             };
