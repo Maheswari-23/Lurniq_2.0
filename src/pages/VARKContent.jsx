@@ -624,49 +624,75 @@ const VARKContent = () => {
               </p>
 
               <div className="kinesthetic-activity">
+                {/* Per-slot instant feedback */}
                 <div className="step-slots">
-                  <DroppableArea id="step-1">
-                    {droppedItems["step-1"] ? <div className="dropped-item">{droppedItems["step-1"]}</div> : <span className="step-placeholder">Drop Step 1 here</span>}
-                  </DroppableArea>
-                  <DroppableArea id="step-2">
-                    {droppedItems["step-2"] ? <div className="dropped-item">{droppedItems["step-2"]}</div> : <span className="step-placeholder">Drop Step 2 here</span>}
-                  </DroppableArea>
-                  <DroppableArea id="step-3">
-                    {droppedItems["step-3"] ? <div className="dropped-item">{droppedItems["step-3"]}</div> : <span className="step-placeholder">Drop Step 3 here</span>}
-                  </DroppableArea>
+                  {[
+                    { id: 'step-1', correct: 'Evaporation',   label: 'Step 1' },
+                    { id: 'step-2', correct: 'Condensation',  label: 'Step 2' },
+                    { id: 'step-3', correct: 'Precipitation', label: 'Step 3' },
+                  ].map(({ id, correct, label }) => {
+                    const dropped = droppedItems[id];
+                    const isRight = dropped === correct;
+                    const slotStyle = dropped
+                      ? {
+                          border: `2.5px solid ${isRight ? '#10B981' : '#EF4444'}`,
+                          background: isRight ? '#F0FDF4' : '#FEF2F2',
+                        }
+                      : {};
+                    return (
+                      <DroppableArea key={id} id={id}>
+                        {dropped ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', justifyContent: 'center', ...slotStyle, borderRadius: '10px', padding: '8px 16px' }}>
+                            <span style={{ fontSize: '18px' }}>{isRight ? '✅' : '❌'}</span>
+                            <span style={{ fontWeight: 700, color: isRight ? '#059669' : '#DC2626', fontSize: '15px' }}>{dropped}</span>
+                            {!isRight && (
+                              <span style={{ fontSize: '12px', color: '#9CA3AF', marginLeft: '4px' }}>
+                                (should be <em>{correct}</em>)
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="step-placeholder">{label} — drop here</span>
+                        )}
+                      </DroppableArea>
+                    );
+                  })}
                 </div>
 
+                {/* Draggable labels pool */}
                 <div className="drag-labels-container">
                   {availableLabels.length > 0 ? (
                     availableLabels.map((label) => (
                       <DraggableLabel key={label} id={label} onDragStart={handleDragStart}>{label}</DraggableLabel>
                     ))
                   ) : (
-                    <div className="completion-feedback">
-                      {droppedItems["step-1"] === "Evaporation" &&
-                        droppedItems["step-2"] === "Condensation" &&
-                        droppedItems["step-3"] === "Precipitation"
-                        ? <p className="success-message">🎉 Perfect sequence!</p>
+                    <div style={{ textAlign: 'center' }}>
+                      {droppedItems['step-1'] === 'Evaporation' &&
+                       droppedItems['step-2'] === 'Condensation' &&
+                       droppedItems['step-3'] === 'Precipitation'
+                        ? <p className="success-message">🎉 Perfect! All steps in the right order!</p>
                         : <div>
-                            <p className="error-message">Not quite right — try again!</p>
-                            <button className="reset-btn" onClick={handleReset}>↺ Reset</button>
+                            <p className="error-message">Some steps are wrong — check the ❌ slots above!</p>
+                            <button className="reset-btn" onClick={handleReset}>↺ Reset &amp; Try Again</button>
                           </div>
                       }
                     </div>
                   )}
                 </div>
 
-                {droppedItems["step-1"] && droppedItems["step-2"] && droppedItems["step-3"] && (
+                {/* Full result banner — only when all slots filled */}
+                {droppedItems['step-1'] && droppedItems['step-2'] && droppedItems['step-3'] && (
                   <div className="feedback-section">
-                    {droppedItems["step-1"] === "Evaporation" &&
-                      droppedItems["step-2"] === "Condensation" &&
-                      droppedItems["step-3"] === "Precipitation"
+                    {droppedItems['step-1'] === 'Evaporation' &&
+                     droppedItems['step-2'] === 'Condensation' &&
+                     droppedItems['step-3'] === 'Precipitation'
                       ? <p className="correct-feedback">✅ Correct! Evaporation → Condensation → Precipitation</p>
-                      : <p className="incorrect-feedback">❌ Incorrect order. Click reset to try again.</p>
+                      : <p className="incorrect-feedback">❌ Incorrect order — look at the red slots and hit reset.</p>
                     }
                   </div>
                 )}
               </div>
+
 
               <div className="questionnaire-section">
                 <button className="questionnaire-btn kinesthetic-btn" onClick={(e) => handleQuestionnaireClick('kinesthetic', e)}>
