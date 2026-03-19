@@ -142,13 +142,17 @@ const FALLBACK_TEMPLATES = {
         ],
     },
     operators_Kinesthetic: {
-        learning_objective: 'Understand operators by predicting and writing expressions.',
+        learning_objective: 'Understand operators by matching symbols to their types.',
         analogy: 'Operators are like a calculator\'s buttons — each does a specific thing.',
         challenge: {
-            instruction: 'Write expressions that produce: remainder of 17÷5, True when x>10 and x<20 (x=15), and 2 to the power 8.',
-            starter: 'remainder = ??\nin_range = ??\npower    = ??\nprint(remainder, in_range, power)',
-            solution: 'remainder = 17 % 5\nin_range = 15 > 10 and 15 < 20\npower    = 2 ** 8\nprint(remainder, in_range, power)',
-            hints: ['% returns the division remainder.', 'Chain comparisons with and.'],
+            type: 'match_pairs',
+            instruction: 'Drag the correct operator type next to its symbol.',
+            pairs: [
+                { id: 'pair-1', left: '+, -, *, /', right: 'Arithmetic' },
+                { id: 'pair-2', left: '==, !=, <, >', right: 'Comparison' },
+                { id: 'pair-3', left: 'and, or, not', right: 'Logical' },
+                { id: 'pair-4', left: '=', right: 'Assignment' }
+            ]
         },
     },
 
@@ -283,13 +287,13 @@ const FALLBACK_TEMPLATES = {
         ],
     },
     loops_Kinesthetic: {
-        learning_objective: 'Write loops by fixing and completing code.',
+        learning_objective: 'Write loops by completing code logic.',
         analogy: 'A loop is a stamp that presses as many times as you tell it.',
         challenge: {
-            instruction: 'Fix the code to print numbers 1 through 5.',
-            starter: 'for i in range(??, ??):\n    print(i)',
-            solution: 'for i in range(1, 6):\n    print(i)',
-            hints: ['range(start, stop) — stop is exclusive.', 'To include 5, use 6 as stop.'],
+            type: 'fill_blanks',
+            instruction: 'Fill in the blanks to complete the loop that prints numbers 1 through 5.',
+            text: 'for i ___ range(___, ___): \n    print(i)',
+            blanks: ['in', '1', '6']
         },
     },
 

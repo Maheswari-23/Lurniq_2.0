@@ -106,14 +106,14 @@ const VARKContent = () => {
 
   // Kinesthetic activity
   const [droppedItems, setDroppedItems] = useState({
-    "step-1": null,
-    "step-2": null,
-    "step-3": null,
+    "evaporation": null,
+    "condensation": null,
+    "precipitation": null,
   });
   const [attemptCount, setAttemptCount] = useState(0);
   const [hasCompletedOnce, setHasCompletedOnce] = useState(false);
 
-  const labels = ["Evaporation", "Condensation", "Precipitation"];
+  const labels = ["Sun heats water", "Vapour cools into clouds", "Water falls as rain"];
   const droppedLabels = Object.values(droppedItems).filter(Boolean);
   const availableLabels = labels.filter(
     (label) => !droppedLabels.includes(label)
@@ -370,9 +370,9 @@ const VARKContent = () => {
 
       // Check if this drop is correct
       const correctAnswers = {
-        "step-1": "Evaporation",
-        "step-2": "Condensation",
-        "step-3": "Precipitation"
+        "evaporation": "Sun heats water",
+        "condensation": "Vapour cools into clouds",
+        "precipitation": "Water falls as rain"
       };
 
       const isCorrectDrop = correctAnswers[over.id] === active.id;
@@ -395,9 +395,9 @@ const VARKContent = () => {
       if (allFilled && !hasCompletedOnce) {
         const completionTime = Math.floor((Date.now() - kinestheticStartTime.current) / 1000);
         const isAllCorrect =
-          newDroppedItems["step-1"] === "Evaporation" &&
-          newDroppedItems["step-2"] === "Condensation" &&
-          newDroppedItems["step-3"] === "Precipitation";
+          newDroppedItems["evaporation"] === "Sun heats water" &&
+          newDroppedItems["condensation"] === "Vapour cools into clouds" &&
+          newDroppedItems["precipitation"] === "Water falls as rain";
 
         setEngagement(prev => ({
           ...prev,
@@ -418,9 +418,9 @@ const VARKContent = () => {
     event.stopPropagation();
 
     setDroppedItems({
-      "step-1": null,
-      "step-2": null,
-      "step-3": null,
+      "evaporation": null,
+      "condensation": null,
+      "precipitation": null,
     });
 
     setEngagement(prev => ({
@@ -664,15 +664,16 @@ const VARKContent = () => {
                   {availableLabels.length > 0 ? (
                     availableLabels.map((label) => (
                       <DraggableLabel key={label} id={label} onDragStart={handleDragStart}>{label}</DraggableLabel>
+
                     ))
                   ) : (
-                    <div style={{ textAlign: 'center' }}>
-                      {droppedItems['step-1'] === 'Evaporation' &&
-                       droppedItems['step-2'] === 'Condensation' &&
-                       droppedItems['step-3'] === 'Precipitation'
-                        ? <p className="success-message">🎉 Perfect! All steps in the right order!</p>
+                    <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                      {droppedItems['evaporation'] === 'Sun heats water' &&
+                       droppedItems['condensation'] === 'Vapour cools into clouds' &&
+                       droppedItems['precipitation'] === 'Water falls as rain'
+                        ? <p className="success-message" style={{ margin: 0, paddingBottom: '12px' }}>🎉 Perfect! All definitions are correct!</p>
                         : <div>
-                            <p className="error-message">Some steps are wrong — check the ❌ slots above!</p>
+                            <p className="error-message" style={{ margin: '0 0 12px 0' }}>Some answers are missing or wrong.</p>
                             <button className="reset-btn" onClick={handleReset}>↺ Reset &amp; Try Again</button>
                           </div>
                       }
@@ -681,13 +682,13 @@ const VARKContent = () => {
                 </div>
 
                 {/* Full result banner — only when all slots filled */}
-                {droppedItems['step-1'] && droppedItems['step-2'] && droppedItems['step-3'] && (
-                  <div className="feedback-section">
-                    {droppedItems['step-1'] === 'Evaporation' &&
-                     droppedItems['step-2'] === 'Condensation' &&
-                     droppedItems['step-3'] === 'Precipitation'
-                      ? <p className="correct-feedback">✅ Correct! Evaporation → Condensation → Precipitation</p>
-                      : <p className="incorrect-feedback">❌ Incorrect order — look at the red slots and hit reset.</p>
+                {droppedItems['evaporation'] && droppedItems['condensation'] && droppedItems['precipitation'] && (
+                  <div className="feedback-section" style={{ marginTop: '16px' }}>
+                    {droppedItems['evaporation'] === 'Sun heats water' &&
+                     droppedItems['condensation'] === 'Vapour cools into clouds' &&
+                     droppedItems['precipitation'] === 'Water falls as rain'
+                      ? <p className="correct-feedback" style={{ margin: 0 }}>✅ Excellent job! You understand the water cycle perfectly.</p>
+                      : <p className="incorrect-feedback" style={{ margin: 0 }}>❌ Incorrect matches — try resetting the incorrect ones.</p>
                     }
                   </div>
                 )}

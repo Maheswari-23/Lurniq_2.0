@@ -2,8 +2,10 @@
 // Renders VARK-specific learning content. No decorative emoji — typographic hierarchy only.
 import React from 'react';
 import PyodideRunner from './PyodideRunner';
-
 import MermaidDiagram from './MermaidDiagram';
+import MatchPairs from './MatchPairs';
+import FillBlanks from './FillBlanks';
+
 
 // ── VISUAL ───────────────────────────────────────────────────────────────────
 const VisualContent = ({ content }) => {
@@ -255,7 +257,11 @@ const KinestheticContent = ({ content }) => {
     const [showSolution, setShowSolution] = React.useState(false);
 
     const { challenge = {}, analogy = '', learning_objective = '' } = content;
-    const { instruction = '', starter = '', solution = '', hints = [] } = challenge;
+    const { 
+        type = 'coding', // 'coding', 'match_pairs', 'fill_blanks'
+        instruction = '', starter = '', solution = '', hints = [],
+        pairs = [], text = '', blanks = []
+    } = challenge;
 
     const handleNextHint = () => {
         setShowHint(true);
@@ -281,31 +287,43 @@ const KinestheticContent = ({ content }) => {
                 </div>
                 <p className="mc-challenge-instruction">{instruction}</p>
 
-                <PyodideRunner initialCode={starter} />
-
-                <div className="mc-challenge-controls">
-                    {hints.length > 0 && (
-                        <button className="mc-btn mc-btn--hint" onClick={handleNextHint}
-                            disabled={showHint && hintIndex >= hints.length - 1}>
-                            {showHint ? 'Next Hint' : 'Show Hint'}
-                        </button>
-                    )}
-                    <button className="mc-btn mc-btn--reveal" onClick={() => setShowSolution(p => !p)}>
-                        {showSolution ? 'Hide Solution' : 'View Solution'}
-                    </button>
-                </div>
-
-                {showHint && hints[hintIndex] && (
-                    <div className="mc-hint">
-                        <strong>Hint {hintIndex + 1}/{hints.length}:</strong> {hints[hintIndex]}
-                    </div>
+                {type === 'match_pairs' && pairs.length > 0 && (
+                    <MatchPairs pairs={pairs} />
                 )}
 
-                {showSolution && (
-                    <div className="mc-solution-wrap">
-                        <h4>Solution</h4>
-                        <pre className="mc-solution-code">{solution}</pre>
-                    </div>
+                {type === 'fill_blanks' && text && blanks.length > 0 && (
+                    <FillBlanks text={text} blanks={blanks} />
+                )}
+
+                {type === 'coding' && (
+                    <React.Fragment>
+                        <PyodideRunner initialCode={starter} />
+
+                        <div className="mc-challenge-controls">
+                            {hints.length > 0 && (
+                                <button className="mc-btn mc-btn--hint" onClick={handleNextHint}
+                                    disabled={showHint && hintIndex >= hints.length - 1}>
+                                    {showHint ? 'Next Hint' : 'Show Hint'}
+                                </button>
+                            )}
+                            <button className="mc-btn mc-btn--reveal" onClick={() => setShowSolution(p => !p)}>
+                                {showSolution ? 'Hide Solution' : 'View Solution'}
+                            </button>
+                        </div>
+
+                        {showHint && hints[hintIndex] && (
+                            <div className="mc-hint">
+                                <strong>Hint {hintIndex + 1}/{hints.length}:</strong> {hints[hintIndex]}
+                            </div>
+                        )}
+
+                        {showSolution && (
+                            <div className="mc-solution-wrap">
+                                <h4>Solution</h4>
+                                <pre className="mc-solution-code">{solution}</pre>
+                            </div>
+                        )}
+                    </React.Fragment>
                 )}
             </div>
         </div>
