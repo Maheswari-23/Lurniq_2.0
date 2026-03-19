@@ -109,14 +109,14 @@ const PodBattle = ({ podId, onClose, currentUser }) => {
     return (
         <div style={{
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-            background: 'rgba(17, 24, 39, 0.95)', zIndex: 9999, display: 'flex',
+            background: 'radial-gradient(circle at 50% 10%, #2e1065 0%, #111827 70%)', zIndex: 9999, display: 'flex',
             flexDirection: 'column', color: 'white', fontFamily: "'Poppins', sans-serif"
         }}>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', background: 'rgba(0,0,0,0.5)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', padding: '8px', borderRadius: '12px' }}>
-                        <Trophy size={24} color="white" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ background: 'linear-gradient(135deg, #F97AFE, #7B61FF)', padding: '10px', borderRadius: '14px', boxShadow: '0 0 20px rgba(123, 97, 255, 0.5)' }}>
+                        <Trophy size={28} color="white" />
                     </div>
                     <div>
                         <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700 }}>Live Boss Battle</h2>
@@ -135,8 +135,8 @@ const PodBattle = ({ podId, onClose, currentUser }) => {
                     {!isEnded ? (
                         <div style={{ width: '100%', maxWidth: '800px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                                <span style={{ fontSize: '18px', fontWeight: 600, color: '#9CA3AF' }}>Question {currentQ + 1} of {battle.questions.length}</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: countdown <= 10 ? '#EF4444' : 'rgba(255,255,255,0.1)', padding: '8px 16px', borderRadius: '20px', transition: 'background 0.3s' }}>
+                                <span style={{ fontSize: '18px', fontWeight: 600, color: '#A78BFA' }}>Question {currentQ + 1} <span style={{ color: '#6B7280' }}>/ {battle.questions.length}</span></span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: countdown <= 10 ? 'rgba(239,68,68,0.2)' : 'rgba(123,97,255,0.2)', color: countdown <= 10 ? '#FCA5A5' : '#E0E7FF', padding: '10px 20px', borderRadius: '24px', transition: 'all 0.3s', border: `1px solid ${countdown <= 10 ? '#EF4444' : '#7B61FF'}`, boxShadow: countdown <= 10 ? '0 0 15px rgba(239,68,68,0.4)' : '0 0 15px rgba(123,97,255,0.4)' }}>
                                     <Clock size={20} />
                                     <span style={{ fontSize: '20px', fontWeight: 700 }}>{countdown}s</span>
                                 </div>
@@ -166,12 +166,13 @@ const PodBattle = ({ podId, onClose, currentUser }) => {
                                                 padding: '24px', borderRadius: '16px', fontSize: '18px', color: 'white',
                                                 cursor: selectedAns !== null ? 'default' : 'pointer',
                                                 textAlign: 'left', display: 'flex', alignItems: 'center', gap: '16px',
-                                                transition: 'all 0.2s', fontWeight: 500
+                                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', fontWeight: 500,
+                                                boxShadow: isSelected ? (feedback === 'correct' ? '0 0 20px rgba(16,185,129,0.3)' : feedback === 'incorrect' ? '0 0 20px rgba(239,68,68,0.3)' : '0 0 20px rgba(123,97,255,0.3)') : 'none'
                                             }}
-                                            onMouseOver={e => { if(selectedAns === null) e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-                                            onMouseOut={e => { if(selectedAns === null) e.currentTarget.style.background = bg }}
+                                            onMouseOver={e => { if(selectedAns === null) { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; } }}
+                                            onMouseOut={e => { if(selectedAns === null) { e.currentTarget.style.background = bg; e.currentTarget.style.transform = 'translateY(0)'; } }}
                                         >
-                                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                                            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: isSelected ? (feedback === 'correct' ? '#10B981' : feedback === 'incorrect' ? '#EF4444' : '#7B61FF') : 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
                                                 {['A','B','C','D'][i]}
                                             </div>
                                             {opt}
@@ -188,26 +189,26 @@ const PodBattle = ({ podId, onClose, currentUser }) => {
 
                         </div>
                     ) : (
-                        <div style={{ textAlign: 'center', animation: 'chatPop 0.5s' }}>
-                            <Trophy size={80} color="#F59E0B" style={{ marginBottom: '20px' }} />
-                            <h1 style={{ fontSize: '48px', fontWeight: 800, margin: '0 0 10px' }}>Battle Complete!</h1>
-                            <p style={{ fontSize: '20px', color: '#9CA3AF' }}>Check the final leaderboard safely.</p>
-                            <button onClick={onClose} style={{ marginTop: '40px', background: 'linear-gradient(135deg, #7B61FF, #F97AFE)', color: 'white', border: 'none', padding: '16px 40px', borderRadius: '99px', fontSize: '20px', fontWeight: 700, cursor: 'pointer' }}>Return to Pod</button>
+                        <div style={{ textAlign: 'center', animation: 'chatPop 0.5s cubic-bezier(0.34,1.56,0.64,1)', background: 'rgba(255,255,255,0.03)', padding: '60px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(20px)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+                            <Trophy size={80} color="#F97AFE" style={{ marginBottom: '20px', filter: 'drop-shadow(0 0 20px rgba(249,122,254,0.6))' }} />
+                            <h1 style={{ fontSize: '48px', fontWeight: 800, margin: '0 0 10px', background: 'linear-gradient(135deg, #F97AFE, #7B61FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Battle Complete!</h1>
+                            <p style={{ fontSize: '20px', color: '#D1D5DB' }}>Check the final leaderboard safely.</p>
+                            <button onClick={onClose} style={{ marginTop: '40px', background: 'linear-gradient(135deg, #F97AFE, #7B61FF)', color: 'white', border: 'none', padding: '16px 40px', borderRadius: '99px', fontSize: '20px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 10px 30px rgba(123,97,255,0.4)', transition: 'transform 0.2s' }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}>Return to Pod</button>
                         </div>
                     )}
                 </div>
 
                 {/* Sidebar Leaderboard */}
-                <div style={{ width: '350px', background: 'rgba(0,0,0,0.3)', borderLeft: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ padding: '24px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Trophy size={20} color="#F59E0B" /> Live Leaderboard
+                <div style={{ width: '380px', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(16px)', borderLeft: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ padding: '24px 30px', borderBottom: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.02)' }}>
+                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', color: '#A78BFA' }}>
+                            <Trophy size={20} color="#F97AFE" /> Live Leaderboard
                         </h3>
                     </div>
                     <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' }}>
                         {battle.leaderboard.map((user, idx) => (
-                            <div key={user.user_id} style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '12px' }}>
-                                <div style={{ fontSize: '20px', fontWeight: 800, color: idx === 0 ? '#F59E0B' : idx === 1 ? '#9CA3AF' : idx === 2 ? '#B45309' : '#6B7280', width: '24px' }}>
+                            <div key={user.user_id} style={{ display: 'flex', alignItems: 'center', gap: '16px', background: user.user_id === currentUser.id ? 'rgba(123,97,255,0.2)' : 'rgba(255,255,255,0.05)', border: user.user_id === currentUser.id ? '1px solid rgba(123,97,255,0.5)' : '1px solid transparent', padding: '16px', borderRadius: '16px', transition: 'all 0.2s' }}>
+                                <div style={{ fontSize: '22px', fontWeight: 800, color: idx === 0 ? '#FBBF24' : idx === 1 ? '#e2e8f0' : idx === 2 ? '#F59E0B' : '#6B7280', width: '30px', textShadow: idx === 0 ? '0 0 10px rgba(251,191,36,0.5)' : 'none' }}>
                                     #{idx + 1}
                                 </div>
                                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: `hsl(${(idx * 50) % 360}, 70%, 60%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 700 }}>
@@ -225,7 +226,10 @@ const PodBattle = ({ podId, onClose, currentUser }) => {
                     </div>
                 </div>
             </div>
-            <style>{`@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }`}</style>
+            <style>{`
+                @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+                @keyframes chatPop { from{opacity:0;transform:scale(0.85) translateY(16px)} to{opacity:1;transform:none} }
+            `}</style>
         </div>
     );
 };
