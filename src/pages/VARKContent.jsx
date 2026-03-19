@@ -433,182 +433,179 @@ const VARKContent = () => {
 
   return (
     <div className="vark-container">
-      <div className="vark-header" style={{ marginBottom: '24px' }}>
+      {/* ── Hero Header ── */}
+      <div className="vark-header">
         <h1 className="gradient-text">VARK Learning Styles</h1>
-        <p className="subtitle">Discover the Water Cycle through Different Learning Approaches</p>
+        <p className="subtitle">Experience the Water Cycle through four unique learning modalities — and discover which one feels most <em>you</em>.</p>
+
+        {/* Cold-start banner */}
+        <div className="cold-start-banner">
+          <div className="cold-start-icon">🔬</div>
+          <div className="cold-start-text">
+            <strong>We're silently calibrating your profile</strong>
+            <p>
+              Since this is your <span className="cold-start-badge">cold start</span>, our AI watches how you naturally engage — do you click videos, read articles, listen to audio, or drag things around?
+              Just explore what feels natural. We'll use your behaviour to personalise your entire learning journey. No forms. No guessing. Pure intelligence. ✨
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div style={{ background: 'linear-gradient(135deg, #7B61FF15, #F97AFE15)', border: '1.5px dashed #7B61FF60', borderRadius: '16px', padding: '24px', margin: '0 20px 40px', textAlign: 'center', boxShadow: '0 8px 24px rgba(123, 97, 255, 0.05)' }}>
-        <h3 style={{ margin: '0 0 10px', color: '#111827', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '24px' }}>🕵️</span> We're secretly studying YOU!
-        </h3>
-        <p style={{ margin: 0, color: '#4B5563', fontSize: '15px', lineHeight: '1.6', maxWidth: '700px', display: 'inline-block' }}>
-          Because this is your <strong>cold start</strong>, our AI is quietly monitoring how you interact with the content below. <strong>Click, scroll, dragging, or watching</strong>—choose the section that feels most natural to you. We'll use this data to magically personalize your entire learning journey! ✨
-        </p>
-      </div>
-
+      {/* ── 4-column card grid ── */}
       <div className="vark-grid">
-        {/* Visual Section */}
+
+        {/* ── Visual ── */}
         <div
           className="learning-card visual-card animate-fade-in"
           onClick={() => handleContentClick("visual")}
           onMouseEnter={() => handleMouseEnter("visual")}
           onMouseLeave={() => handleMouseLeave("visual")}
         >
-          <div className="card-header">
-            <h2>📊 Visual Learning</h2>
-            <span className="learning-badge">Watch & See</span>
-          </div>
-          <p className="card-description">Learn with diagrams, infographics, and videos.</p>
+          <div className="card-accent" />
+          <div className="card-inner">
+            <div className="card-header">
+              <h2>Visual Learning</h2>
+              <span className="learning-badge">Watch &amp; See</span>
+            </div>
+            <p className="card-description">Understand concepts through diagrams, infographics, and dynamic video.</p>
 
-          <div className="media-container">
-            <iframe
-              ref={videoRef}
-              width="100%"
-              height="250"
-              src="https://www.youtube.com/embed/LkGvA0WZS5o?si=Fr2ziZ2rft0nX0hG&enablejsapi=1"
-              title="Water Cycle Video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-              className="video-frame"
-              onPlay={handleVideoPlay}
-              onPause={handleVideoPause}
-            ></iframe>
-          </div>
+            <div className="media-container">
+              <iframe
+                ref={videoRef}
+                width="100%" height="240"
+                src="https://www.youtube.com/embed/LkGvA0WZS5o?si=Fr2ziZ2rft0nX0hG&enablejsapi=1"
+                title="Water Cycle Video"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                className="video-frame"
+                onPlay={handleVideoPlay}
+                onPause={handleVideoPause}
+              />
+            </div>
 
-          <div className="questionnaire-section">
-            <button
-              className="questionnaire-btn visual-btn"
-              onClick={(e) => handleQuestionnaireClick('visual', e)}
-            >
-              📋 Take Learning Assessment
-            </button>
-          </div>
+            <div className="questionnaire-section">
+              <button className="questionnaire-btn visual-btn" onClick={(e) => handleQuestionnaireClick('visual', e)}>
+                Take Learning Assessment →
+              </button>
+            </div>
 
-          <div className="card-footer">
-            <p>🎥 Interactive visual content helps you understand processes through observation</p>
+            <div className="card-footer">
+              <p>Visual content helps you perceive and retain information through observation and spatial awareness.</p>
+            </div>
           </div>
         </div>
 
-        {/* Auditory Section */}
+        {/* ── Auditory ── */}
         <div
           className="learning-card auditory-card animate-fade-in"
           onClick={() => handleContentClick("auditory")}
           onMouseEnter={() => handleMouseEnter("auditory")}
           onMouseLeave={() => handleMouseLeave("auditory")}
         >
-          <div className="card-header">
-            <h2>🎵 Auditory Learning</h2>
-            <span className="learning-badge">Listen & Learn</span>
-          </div>
-          <p className="card-description">Learn with podcasts, lectures, and discussions.</p>
+          <div className="card-accent" />
+          <div className="card-inner">
+            <div className="card-header">
+              <h2>Auditory Learning</h2>
+              <span className="learning-badge">Listen &amp; Learn</span>
+            </div>
+            <p className="card-description">Absorb information through podcasts, lectures, rhythms and discussion.</p>
 
-          <div className="media-container">
-            <audio
-              ref={audioRef}
-              controls
-              className="audio-player"
-              onPlay={handleAudioPlay}
-              onPause={handleAudioPause}
-              onTimeUpdate={handleAudioTimeUpdate}
-            >
-              <source src="/raindrops.mp3" type="audio/mpeg" />
-              Your browser does not support the audio element.
-            </audio>
-          </div>
+            <div className="media-container">
+              <audio
+                ref={audioRef}
+                controls
+                className="audio-player"
+                onPlay={handleAudioPlay}
+                onPause={handleAudioPause}
+                onTimeUpdate={handleAudioTimeUpdate}
+              >
+                <source src="/raindrops.mp3" type="audio/mpeg" />
+                Your browser does not support the audio element.
+              </audio>
+            </div>
 
-          <div className="audio-content">
-            <h3>🌧️ Listen to Nature's Symphony</h3>
-            <p>Experience the sounds of rain and learn about precipitation patterns through audio explanations and natural soundscapes.</p>
-          </div>
+            <div className="audio-content">
+              <h3>🌧️ The Sound of Precipitation</h3>
+              <p>Listen carefully — each raindrop is evidence of the water cycle completing its loop. Precipitation is nature's way of returning water from atmosphere back to Earth.</p>
+            </div>
 
-          <div className="questionnaire-section">
-            <button
-              className="questionnaire-btn auditory-btn"
-              onClick={(e) => handleQuestionnaireClick('auditory', e)}
-            >
-              🎧 Take Learning Assessment
-            </button>
-          </div>
+            <div className="questionnaire-section">
+              <button className="questionnaire-btn auditory-btn" onClick={(e) => handleQuestionnaireClick('auditory', e)}>
+                Take Learning Assessment →
+              </button>
+            </div>
 
-          <div className="card-footer">
-            <p>🎧 Audio learning helps you retain information through listening and repetition</p>
+            <div className="card-footer">
+              <p>Auditory learners retain information best through listening, rhythm, and verbal explanation.</p>
+            </div>
           </div>
         </div>
 
-        {/* Reading/Writing Section */}
+        {/* ── Reading/Writing ── */}
         <div
           className="learning-card reading-card animate-fade-in"
           onClick={() => handleContentClick("reading")}
           onMouseEnter={() => handleMouseEnter("reading")}
           onMouseLeave={() => handleMouseLeave("reading")}
         >
-          <div className="card-header">
-            <h2>📚 Reading/Writing</h2>
-            <span className="learning-badge">Read & Write</span>
-          </div>
-          <p className="card-description">Learn through detailed text, notes, and written explanations.</p>
-
-          <div
-            ref={readingRef}
-            className="reading-content"
-            onScroll={handleReadingScroll}
-            onMouseUp={handleTextSelection}
-            style={{ maxHeight: '400px', overflowY: 'auto' }}
-          >
-            <h3>What Is the Water Cycle?</h3>
-            <p>The water cycle is the continuous movement of water on Earth. The sun heats water bodies, turning water into vapor through evaporation.</p>
-
-            <div className="step-section">
-              <h4>Step 1: Evaporation</h4>
-              <p>Sun heats water, turning it into vapor that rises into the air.</p>
+          <div className="card-accent" />
+          <div className="card-inner">
+            <div className="card-header">
+              <h2>Reading / Writing</h2>
+              <span className="learning-badge">Read &amp; Write</span>
             </div>
+            <p className="card-description">Process knowledge through detailed text, structured notes, and written explanation.</p>
 
-            <div className="step-section">
-              <h4>Step 2: Condensation</h4>
-              <p>Water vapor cools and forms tiny droplets, creating clouds.</p>
-            </div>
+            <div
+              ref={readingRef}
+              className="reading-content"
+              onScroll={handleReadingScroll}
+              onMouseUp={handleTextSelection}
+              style={{ maxHeight: '380px', overflowY: 'auto' }}
+            >
+              <h3>What Is the Water Cycle?</h3>
+              <p>The water cycle is the continuous movement of water through Earth's systems — driven by solar energy and gravity, it sustains all life.</p>
 
-            <div className="step-section">
-              <h4>Step 3: Precipitation</h4>
-              <p>Droplets grow heavy and fall as rain, snow, or hail.</p>
-            </div>
+              <div className="step-section">
+                <h4>Step 1 — Evaporation</h4>
+                <p>Solar energy heats surface water, converting it into water vapour that rises into the atmosphere.</p>
+              </div>
+              <div className="step-section">
+                <h4>Step 2 — Condensation</h4>
+                <p>As vapour rises and cools, it condenses around tiny particles, forming clouds and fog.</p>
+              </div>
+              <div className="step-section">
+                <h4>Step 3 — Precipitation</h4>
+                <p>Water droplets merge, grow heavy, and fall as rain, snow, sleet, or hail, replenishing surface water stores.</p>
+              </div>
 
-            <div className="key-words">
-              <h4>Key Terms</h4>
-              <div className="keyword-grid">
-                <div className="keyword-item">
-                  <strong>Evaporation:</strong> Water turns into vapor
-                </div>
-                <div className="keyword-item">
-                  <strong>Condensation:</strong> Vapor forms clouds
-                </div>
-                <div className="keyword-item">
-                  <strong>Precipitation:</strong> Water falls as rain
+              <div className="key-words">
+                <h4>Key Terminology</h4>
+                <div className="keyword-grid">
+                  <div className="keyword-item"><strong>Evaporation:</strong> Liquid → water vapour via heat</div>
+                  <div className="keyword-item"><strong>Condensation:</strong> Vapour → liquid droplets via cooling</div>
+                  <div className="keyword-item"><strong>Precipitation:</strong> Atmospheric water → Earth's surface</div>
                 </div>
               </div>
+
+              <p className="conclusion">The water cycle is a closed system — the same water has been recycled for billions of years.</p>
             </div>
 
-            <p className="conclusion">This cycle keeps our planet's water moving and supports all life.</p>
-          </div>
+            <div className="questionnaire-section">
+              <button className="questionnaire-btn reading-btn" onClick={(e) => handleQuestionnaireClick('reading', e)}>
+                Take Learning Assessment →
+              </button>
+            </div>
 
-          <div className="questionnaire-section">
-            <button
-              className="questionnaire-btn reading-btn"
-              onClick={(e) => handleQuestionnaireClick('reading', e)}
-            >
-              📝 Take Learning Assessment
-            </button>
-          </div>
-
-          <div className="card-footer">
-            <p>📖 Reading and writing helps you process and retain detailed information</p>
+            <div className="card-footer">
+              <p>Text-based learners excel when they can annotate, summarise, and engage with written content.</p>
+            </div>
           </div>
         </div>
 
-        {/* Kinesthetic Section */}
+        {/* ── Kinesthetic ── */}
         <DndContext onDragEnd={handleDragEnd}>
           <div
             className="learning-card kinesthetic-card animate-fade-in"
@@ -616,105 +613,78 @@ const VARKContent = () => {
             onMouseEnter={() => handleMouseEnter("kinesthetic")}
             onMouseLeave={() => handleMouseLeave("kinesthetic")}
           >
-            <div className="card-header">
-              <h2>🤹 Kinesthetic Learning</h2>
-              <span className="learning-badge">Touch & Move</span>
-            </div>
-            <p className="card-description">
-              Drag and drop the steps of the water cycle into the correct order!
-            </p>
-
-            <div className="kinesthetic-activity">
-              <div className="step-slots">
-                <DroppableArea id="step-1">
-                  {droppedItems["step-1"] ? (
-                    <div className="dropped-item">{droppedItems["step-1"]}</div>
-                  ) : (
-                    <span className="step-placeholder">Step 1</span>
-                  )}
-                </DroppableArea>
-
-                <DroppableArea id="step-2">
-                  {droppedItems["step-2"] ? (
-                    <div className="dropped-item">{droppedItems["step-2"]}</div>
-                  ) : (
-                    <span className="step-placeholder">Step 2</span>
-                  )}
-                </DroppableArea>
-
-                <DroppableArea id="step-3">
-                  {droppedItems["step-3"] ? (
-                    <div className="dropped-item">{droppedItems["step-3"]}</div>
-                  ) : (
-                    <span className="step-placeholder">Step 3</span>
-                  )}
-                </DroppableArea>
+            <div className="card-accent" />
+            <div className="card-inner">
+              <div className="card-header">
+                <h2>Kinesthetic Learning</h2>
+                <span className="learning-badge">Touch &amp; Move</span>
               </div>
+              <p className="card-description">
+                Arrange the three stages of the water cycle in the correct sequence by dragging the labels into their slots.
+              </p>
 
-              <div className="drag-labels-container">
-                {availableLabels.length > 0 ? (
-                  availableLabels.map((label) => (
-                    <DraggableLabel key={label} id={label} onDragStart={handleDragStart}>
-                      {label}
-                    </DraggableLabel>
-                  ))
-                ) : (
-                  <div className="completion-feedback">
-                    {droppedItems["step-1"] === "Evaporation" &&
-                      droppedItems["step-2"] === "Condensation" &&
-                      droppedItems["step-3"] === "Precipitation" ? (
-                      <p className="success-message">🎉 Great Job! 🎉</p>
-                    ) : (
-                      <div>
-                        <p className="error-message">❌ Not quite. Try again!</p>
-                        <button
-                          className="reset-btn"
-                          onClick={handleReset}
-                        >
-                          🔄 Reset
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              <div className="kinesthetic-activity">
+                <div className="step-slots">
+                  <DroppableArea id="step-1">
+                    {droppedItems["step-1"] ? <div className="dropped-item">{droppedItems["step-1"]}</div> : <span className="step-placeholder">Drop Step 1 here</span>}
+                  </DroppableArea>
+                  <DroppableArea id="step-2">
+                    {droppedItems["step-2"] ? <div className="dropped-item">{droppedItems["step-2"]}</div> : <span className="step-placeholder">Drop Step 2 here</span>}
+                  </DroppableArea>
+                  <DroppableArea id="step-3">
+                    {droppedItems["step-3"] ? <div className="dropped-item">{droppedItems["step-3"]}</div> : <span className="step-placeholder">Drop Step 3 here</span>}
+                  </DroppableArea>
+                </div>
 
-              {droppedItems["step-1"] &&
-                droppedItems["step-2"] &&
-                droppedItems["step-3"] && (
+                <div className="drag-labels-container">
+                  {availableLabels.length > 0 ? (
+                    availableLabels.map((label) => (
+                      <DraggableLabel key={label} id={label} onDragStart={handleDragStart}>{label}</DraggableLabel>
+                    ))
+                  ) : (
+                    <div className="completion-feedback">
+                      {droppedItems["step-1"] === "Evaporation" &&
+                        droppedItems["step-2"] === "Condensation" &&
+                        droppedItems["step-3"] === "Precipitation"
+                        ? <p className="success-message">🎉 Perfect sequence!</p>
+                        : <div>
+                            <p className="error-message">Not quite right — try again!</p>
+                            <button className="reset-btn" onClick={handleReset}>↺ Reset</button>
+                          </div>
+                      }
+                    </div>
+                  )}
+                </div>
+
+                {droppedItems["step-1"] && droppedItems["step-2"] && droppedItems["step-3"] && (
                   <div className="feedback-section">
                     {droppedItems["step-1"] === "Evaporation" &&
                       droppedItems["step-2"] === "Condensation" &&
-                      droppedItems["step-3"] === "Precipitation" ? (
-                      <p className="correct-feedback">
-                        ✅ Correct! That's the right order.
-                      </p>
-                    ) : (
-                      <p className="incorrect-feedback">
-                        ❌ Not quite. Click reset to try again!
-                      </p>
-                    )}
+                      droppedItems["step-3"] === "Precipitation"
+                      ? <p className="correct-feedback">✅ Correct! Evaporation → Condensation → Precipitation</p>
+                      : <p className="incorrect-feedback">❌ Incorrect order. Click reset to try again.</p>
+                    }
                   </div>
                 )}
-            </div>
+              </div>
 
-            <div className="questionnaire-section">
-              <button
-                className="questionnaire-btn kinesthetic-btn"
-                onClick={(e) => handleQuestionnaireClick('kinesthetic', e)}
-              >
-                🎯 Take Learning Assessment
-              </button>
-            </div>
+              <div className="questionnaire-section">
+                <button className="questionnaire-btn kinesthetic-btn" onClick={(e) => handleQuestionnaireClick('kinesthetic', e)}>
+                  Take Learning Assessment →
+                </button>
+              </div>
 
-            <div className="card-footer">
-              <p>🎯 Hands-on activities help you learn through movement and interaction</p>
+              <div className="card-footer">
+                <p>Kinesthetic learners thrive through hands-on experimentation and physical engagement with content.</p>
+              </div>
             </div>
           </div>
         </DndContext>
+
       </div>
     </div>
   );
 };
+
 
 export default VARKContent;
