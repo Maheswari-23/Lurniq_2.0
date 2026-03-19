@@ -3,7 +3,7 @@
 // After each bot reply, shows "+ Add to Learning Hub" button to add
 // the topic as a new custom module with content across all 4 VARK styles.
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Bot, PlusCircle } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Bot, PlusCircle, FileUp } from 'lucide-react';
 import API_BASE_URL from '../config.js';
 
 const BUILTIN_IDS = new Set([
@@ -26,16 +26,62 @@ const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default', inline = false }
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const endRef = useRef(null);
+    const fileInputRef = useRef(null);
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        setMessages(m => [...m, { role: 'user', text: `Uploaded: ${file.name}` }]);
+        setLoading(true);
+        
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('vark_style', varkStyle);
+            formData.append('persona', persona);
+
+            const res = await fetch(`${API_BASE_URL}/upload_to_chat`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${localStorage.getItem('lurniq_token')}` },
+                body: formData,
+            });
+            
+            if (!res.ok) throw new Error('Upload failed');
+            const data = await res.json();
+            
+            setMessages(m => [
+                ...m,
+                { role: 'bot', text: data.answer },
+                { role: 'action', question: data.topic_id, answer: data.answer }
+            ]);
+        } catch (err) {
+            setMessages(m => [...m, { role: 'bot', text: `Failed to process document: ${err.message}` }]);
+        } finally {
+            setLoading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, open]);
 
     const addToHub = (question, answer) => {
         if (!window.__addCustomTopic) return;
-        const id = slugify(question);
+        
+        let id = slugify(question);
+        let label = question.slice(0, 60);
+        
+        if (question.startsWith('doc:')) {
+            id = question;
+            label = "Uploaded PDF Document";
+        } else if (question.includes('youtube.com') || question.includes('youtu.be')) {
+            id = question; 
+        }
+
         if (BUILTIN_IDS.has(id)) return; // don't add built-ins again
         window.__addCustomTopic({
             id,
-            label: question.slice(0, 60),
+            label,
             description: answer.slice(0, 120) + '…',
             difficulty: 2,
             category: 'My Topics',
@@ -166,11 +212,16 @@ const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default', inline = false }
 
                     {/* Input */}
                     <div style={{ padding: '10px 12px', borderTop: '1px solid #F3F4F6', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".pdf" style={{ display: 'none' }} />
+                        <button onClick={() => fileInputRef.current?.click()} disabled={loading} title="Upload PDF"
+                            style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#F3F4F6', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: loading ? 0.5 : 1 }}>
+                            <FileUp size={16} color="#6B7280" />
+                        </button>
                         <input
                             value={input}
                             onChange={e => setInput(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && sendMessage()}
-                            placeholder="Ask anything…"
+                            placeholder="Ask anything or paste a YouTube link…"
                             style={{ flex: 1, border: '1.5px solid #E5E7EB', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
                         />
                         <button onClick={() => sendMessage()} disabled={!input.trim() || loading}

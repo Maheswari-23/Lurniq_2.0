@@ -12,6 +12,8 @@ import string
 import random
 from bson.objectid import ObjectId
 from groq import Groq
+from youtube_transcript_api import YouTubeTranscriptApi
+import fitz  # PyMuPDF
 
 # Initialize Groq client
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -322,6 +324,20 @@ def chatbot():
             persona_prompt = "Explain in a standard educational format." if persona == 'Default' else f"Explain using {persona} analogies and terms."
             system_prompt = f"You are a helpful AI Computer Science tutor. The student is a '{vark_style}' learner. {persona_prompt} Keep your answer concise (under 150 words) and directly address the user's question without any markdown formatting."
             
+            # Check for YouTube URL
+            yt_match = re.search(r'(?:v=|\/)([0-9A-Za-z_-]{11}).*', question)
+            if yt_match:
+                video_id = yt_match.group(1)
+                try:
+                    transcript = YouTubeTranscriptApi.get_transcript(video_id)
+                    text = " ".join([t['text'] for t in transcript])
+                    # truncate if too long (keep first ~3000 chars)
+                    text_chunk = text[:3000]
+                    question = f"Please summarize the following educational video transcript in 2 sentences. Transcript limit: {text_chunk}"
+                except Exception as e:
+                    print(f"Transcript error: {e}")
+                    return jsonify({'answer': f"I detected a YouTube link, but couldn't fetch the transcript: {str(e)}", 'vark_style': vark_style, 'persona': persona}), 200
+
             chat_completion = groq_client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -391,6 +407,55 @@ def chatbot():
         )
 
     return jsonify({'answer': answer, 'vark_style': vark_style}), 200
+
+
+@app.route('/api/upload_to_chat', methods=['POST'])
+@jwt_required()
+def upload_to_chat():
+    """Handle PDF uploads, extract text, save to DB, and return a chatbot summary."""
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    try:
+        # Read PDF using PyMuPDF (fitz)
+        pdf_bytes = file.read()
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        text = ""
+        for page in doc:
+            text += page.get_text() + "\n"
+        
+        # Limit text size to ~10,000 characters for Groq context window safety
+        text_chunk = text[:10000]
+
+        # Save to database
+        db = get_db()
+        doc_res = db.documents.insert_one({"filename": file.filename, "text": text_chunk, "created_at": datetime.now(timezone.utc)})
+        doc_id = str(doc_res.inserted_id)
+
+        vark_style = request.form.get('vark_style', 'Visual')
+        persona = request.form.get('persona', 'Default')
+
+        if groq_client:
+            persona_prompt = "Explain in a standard educational format." if persona == 'Default' else f"Explain using {persona} analogies and terms."
+            system_prompt = f"You are a helpful AI Computer Science tutor. The student is a '{vark_style}' learner. {persona_prompt} Read the following document text and concisely summarize its main educational concept in under 150 words without any markdown formatting. Document text: {text_chunk[:3000]}"
+            
+            chat_completion = groq_client.chat.completions.create(
+                messages=[{"role": "system", "content": system_prompt}],
+                model="llama-3.3-70b-versatile",
+                temperature=0.7,
+            )
+            answer = f"I've read '{file.filename}'. {chat_completion.choices[0].message.content}"
+        else:
+            answer = f"I've successfully processed the document '{file.filename}'. Click the + button to generate a full module from it!"
+
+        return jsonify({'answer': answer, 'topic_id': f"doc:{doc_id}", 'vark_style': vark_style, 'persona': persona}), 200
+
+    except Exception as e:
+        print(f"Error processing upload: {e}")
+        return jsonify({'error': str(e)}), 500
 
 
 # ── end auth endpoints ─────────────────────────────────────────────
@@ -1094,10 +1159,32 @@ def generate_capsule():
     """
     try:
         data = request.get_json()
-        topic      = data.get("topic", "").lower().strip()
+        topic      = data.get("topic", "").strip()
         modality   = data.get("modality", "Visual").strip()
         difficulty = int(data.get("difficulty", 1))
         persona    = data.get("persona", "Default").strip()
+
+        # Check for YouTube URL in the topic
+        yt_match = re.search(r'(?:v=|\/)([0-9A-Za-z_-]{11}).*', topic)
+        topic_context = f"'{topic}'"
+        
+        if yt_match:
+            try:
+                transcript = YouTubeTranscriptApi.get_transcript(yt_match.group(1))
+                text = " ".join([t['text'] for t in transcript])
+                topic_context = f"the educational concepts covered in this video transcript: {text[:4000]}"
+            except Exception as e:
+                print("Transcript fetch failed during capsule generation:", e)
+        elif topic.startswith("doc:"):
+            # It's an uploaded PDF document
+            try:
+                doc_id = topic.split(":")[1]
+                db = get_db()
+                doc_record = db.documents.find_one({"_id": ObjectId(doc_id)})
+                if doc_record:
+                    topic_context = f"the educational concepts covered in this uploaded document: {doc_record['text'][:5000]}"
+            except Exception as e:
+                print("Failed to fetch document text for capsule:", e)
 
         template = None
         if groq_client:
@@ -1116,7 +1203,7 @@ def generate_capsule():
             
             persona_instruction = "Use standard educational terms." if persona == 'Default' else f"You MUST strictly explain this using '{persona}' analogies and terms."
             
-            system_prompt = f"""You are an educational AI. Generate a JSON response for a micro-learning capsule about '{topic}'. 
+            system_prompt = f"""You are an educational AI. Generate a JSON response for a micro-learning capsule about {topic_context}. 
 The learner style is '{modality}'.
 {persona_instruction}
 Your response MUST be raw JSON that matches this structure exactly, filling in the content with the appropriate theme:
@@ -1544,6 +1631,173 @@ def update_pod_goals(pod_id):
     if not pod or user_id not in pod.get("members", []):
         return jsonify({"success": False, "error": "Access denied"}), 403
     db.pods.update_one({"_id": pod["_id"]}, {"$set": {"goals": goals}})
+    return jsonify({"success": True}), 200
+
+# ── Pod Boss Battles ─────────────────────────────────────────────────────────
+
+@app.route('/api/pods/<pod_id>/battle/start', methods=['POST'])
+@jwt_required()
+def start_pod_battle(pod_id):
+    """Start a competitive multiplayer boss battle in the pod."""
+    user_id = get_jwt_identity()
+    db = get_db()
+    data = request.get_json(silent=True) or {}
+    topic = data.get('topic', 'computer science basics').strip()
+
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+
+    if not pod or user_id not in pod.get("members", []):
+        return jsonify({"success": False, "error": "Access denied"}), 403
+
+    # Generate 5 questions via Groq
+    questions = []
+    if groq_client:
+        system_prompt = f"Generate exactly 5 intermediate-level multiple choice questions about '{topic}'. Return ONLY a raw JSON array of objects. Format each object: {{\"q\": \"question text\", \"options\": [\"A\", \"B\", \"C\", \"D\"], \"answer\": integer_index_0_to_3}}. Do NOT include markdown blocks."
+        try:
+            comp = groq_client.chat.completions.create(
+                messages=[{"role": "system", "content": system_prompt}],
+                model="llama-3.3-70b-versatile",
+                temperature=0.7,
+            )
+            raw = comp.choices[0].message.content.strip()
+            if raw.startswith("```json"): raw = raw[7:-3].strip()
+            elif raw.startswith("```"): raw = raw[3:-3].strip()
+            questions = json.loads(raw)
+        except Exception as e:
+            print("Failed to generate battle questions:", e)
+            questions = [
+                {"q": f"What is a key concept in {topic}?", "options": ["Abstraction", "Photosynthesis", "Gravity", "Combustion"], "answer": 0},
+                {"q": "Which of these is generally fastest?", "options": ["O(n^2)", "O(n)", "O(1)", "O(n log n)"], "answer": 2},
+                {"q": "What data structure uses LIFO?", "options": ["Queue", "Tree", "Graph", "Stack"], "answer": 3},
+                {"q": "Which data structure uses FIFO?", "options": ["Stack", "Array", "Queue", "Heap"], "answer": 2},
+                {"q": f"Why is {topic} important?", "options": ["It is not", "Efficiency", "Color", "Weight"], "answer": 1}
+            ]
+
+    battle_state = {
+        "state": "active",
+        "topic": topic,
+        "started_by": user_id,
+        "questions": questions,
+        "scores": {},  # { user_id: int_score }
+        "start_time": datetime.now(timezone.utc).isoformat()
+    }
+    
+    db.pods.update_one({"_id": pod["_id"]}, {"$set": {"active_battle": battle_state}})
+    return jsonify({"success": True}), 200
+
+
+@app.route('/api/pods/<pod_id>/battle/submit', methods=['POST'])
+@jwt_required()
+def submit_pod_battle_answer(pod_id):
+    """Submit an answer to the current battle and update score."""
+    user_id = get_jwt_identity()
+    db = get_db()
+    data = request.get_json(silent=True) or {}
+    q_index = data.get('q_index')
+    ans_index = data.get('ans_index')
+
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+
+    if not pod or 'active_battle' not in pod:
+        return jsonify({"success": False, "error": "No active battle found"}), 404
+
+    battle = pod['active_battle']
+    if battle.get('state') != "active" or not isinstance(q_index, int) or not isinstance(ans_index, int):
+        return jsonify({"success": False}), 400
+
+    if q_index >= len(battle['questions']):
+        return jsonify({"success": False}), 400
+
+    correct_ans = battle['questions'][q_index]['answer']
+    is_correct = (ans_index == correct_ans)
+
+    # Initialize score if not present
+    scores = battle.get('scores', {})
+    if user_id not in scores:
+        scores[user_id] = 0
+
+    if is_correct:
+        scores[user_id] += 1
+        db.pods.update_one(
+            {"_id": pod["_id"]},
+            {"$set": {f"active_battle.scores.{user_id}": scores[user_id]}}
+        )
+
+    return jsonify({"success": True, "correct": is_correct, "current_score": scores[user_id]}), 200
+
+
+@app.route('/api/pods/<pod_id>/battle/state', methods=['GET'])
+@jwt_required()
+def get_pod_battle_state(pod_id):
+    """Poll for the current battle state and live leaderboard."""
+    user_id = get_jwt_identity()
+    db = get_db()
+    
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+
+    if not pod or user_id not in pod.get("members", []):
+        return jsonify({"success": False, "error": "Access denied"}), 403
+
+    battle = pod.get('active_battle', None)
+    if not battle:
+        return jsonify({"success": True, "battle": None}), 200
+
+    # Hide true answers from the client
+    safe_questions = []
+    for q in battle.get("questions", []):
+        safe_questions.append({
+            "q": q["q"],
+            "options": q["options"]
+        })
+
+    # Get names for the leaderboard
+    scores = battle.get("scores", {})
+    leaderboard = []
+    if scores:
+        member_ids = [ObjectId(uid) for uid in scores.keys() if len(uid) == 24]
+        users = list(db.users.find({"_id": {"$in": member_ids}}))
+        name_map = {str(u["_id"]): u.get("name", "User") for u in users}
+        
+        for uid, score in scores.items():
+            leaderboard.append({"user_id": uid, "name": name_map.get(uid, "User"), "score": score})
+    
+    leaderboard.sort(key=lambda x: x["score"], reverse=True)
+
+    safe_battle = {
+        "state": battle.get("state"),
+        "topic": battle.get("topic"),
+        "questions": safe_questions,
+        "leaderboard": leaderboard,
+        "start_time": battle.get("start_time")
+    }
+    
+    return jsonify({"success": True, "battle": safe_battle}), 200
+
+
+@app.route('/api/pods/<pod_id>/battle/end', methods=['POST'])
+@jwt_required()
+def end_pod_battle(pod_id):
+    user_id = get_jwt_identity()
+    db = get_db()
+    
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+
+    if not pod or 'active_battle' not in pod:
+        return jsonify({"success": True}), 200
+        
+    db.pods.update_one({"_id": pod["_id"]}, {"$set": {"active_battle.state": "ended"}})
     return jsonify({"success": True}), 200
 
 

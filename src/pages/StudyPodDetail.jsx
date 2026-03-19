@@ -11,6 +11,8 @@ import PodVideoCall from '../components/phase2/PodVideoCall';
 import AIChatbot from '../components/AIChatbot';
 import CapsuleViewer from '../components/phase2/CapsuleViewer';
 import ContentCard from '../components/phase2/ContentCard';
+import PodBattle from '../components/phase2/PodBattle';
+import API_BASE_URL from '../config.js';
 import '../styles/phase2.css';
 
 // ── Built-in topic catalogue (same as LearningContent) ──────────────
@@ -220,6 +222,10 @@ const StudyPodDetail = () => {
     const [showAddTask, setShowAddTask] = useState(false);
     const [editingGoals, setEditingGoals] = useState(false);
     const [goalsText, setGoalsText] = useState('');
+    
+    // Boss Battle State
+    const [showBattle, setShowBattle] = useState(false);
+    const [startingBattle, setStartingBattle] = useState(false);
 
     const chatRef = useRef(null);
     const myId = currentUser?._id || currentUser?.id;
@@ -242,6 +248,23 @@ const StudyPodDetail = () => {
         const tempMsg = { sender_id: myId, sender_name: currentUser.name, message: msgText, timestamp: new Date().toISOString(), isMe: true };
         setChat(c => [...c, tempMsg]);
         try { await sendChatMessage(podId, msgText); loadData(); } catch (e) { console.error(e); }
+    };
+
+    const handleStartBattle = async () => {
+        try {
+            setStartingBattle(true);
+            await fetch(`${API_BASE_URL}/pods/${podId}/battle/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('lurniq_token')}` },
+                body: JSON.stringify({ topic: pod.weekly_challenge || 'Computer Science' })
+            });
+            await loadData();
+            setShowBattle(true);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setStartingBattle(false);
+        }
     };
 
     const handleToggleTask = async (taskId, isCompleted) => {
@@ -301,6 +324,18 @@ const StudyPodDetail = () => {
                     <h1 style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: '#111827' }}>{pod.name}</h1>
                     <span style={{ background: '#F3F4F6', padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 500, color: '#4B5563' }}>Code: {pod.pod_code}</span>
                     <span style={{ background: '#F3F4F6', padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: 500, color: '#4B5563' }}>{memberCount} Members</span>
+                    
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                        {(pod.active_battle && pod.active_battle.state === 'active') ? (
+                            <button onClick={() => setShowBattle(true)} style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)', animation: 'pulse 2s infinite' }}>
+                                <Trophy size={18} /> Join Battle
+                            </button>
+                        ) : (
+                            <button onClick={handleStartBattle} disabled={startingBattle} style={{ background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', opacity: startingBattle ? 0.7 : 1 }}>
+                                {startingBattle ? <Loader2 size={18} className="lucide-spin" /> : <Trophy size={18} />} Start Battle
+                            </button>
+                        )}
+                    </div>
                 </div>
                 <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', fontWeight: 600, color: '#374151' }}>
@@ -413,6 +448,10 @@ const StudyPodDetail = () => {
 
             {/* Floating Chat Icon */}
             <FloatingChat chat={chat} onSend={handleChatSend} chatRef={chatRef} />
+            
+            {showBattle && (
+                <PodBattle podId={podId} currentUser={currentUser} onClose={() => setShowBattle(false)} />
+            )}
         </div>
     );
 };
