@@ -8,6 +8,9 @@ import os
 import re
 import math
 import json
+import string
+import random
+from bson.objectid import ObjectId
 from groq import Groq
 
 # Initialize Groq client
@@ -1277,6 +1280,191 @@ def get_analytics():
         'message': 'Analytics endpoint - implement database queries here',
         'timestamp': datetime.now().isoformat()
     }), 200
+
+# ──────────────────────────────────────────────────────────────────
+# STUDY PODS ENDPOINTS
+# ──────────────────────────────────────────────────────────────────
+
+def generate_pod_code():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
+
+@app.route('/api/pods/create', methods=['POST'])
+@jwt_required()
+def create_pod():
+    user_id = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    name = data.get('name', 'New Pod').strip()
+    goals = data.get('goals', '').strip()
+    weekly_challenge = data.get('weekly_challenge', '').strip()
+
+    db = get_db()
+    pod_code = generate_pod_code()
+    # ensure uniqueness
+    while db.pods.find_one({"pod_code": pod_code}):
+        pod_code = generate_pod_code()
+
+    pod_doc = {
+        "name": name,
+        "pod_code": pod_code,
+        "creator_id": user_id,
+        "members": [user_id],
+        "goals": goals,
+        "weekly_challenge": weekly_challenge,
+        "daily_tasks": [
+            {"id": "t1", "task": "Complete 1 micro-capsule"},
+            {"id": "t2", "task": "Share 1 insight in chat"},
+            {"id": "t3", "task": "Review weekly challenge"}
+        ],
+        "task_completions": {}, # mapping task_id -> list of user_ids who completed it
+        "chat_history": [],
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    res = db.pods.insert_one(pod_doc)
+    return jsonify({"success": True, "pod_code": pod_code, "pod_id": str(res.inserted_id)}), 201
+
+
+@app.route('/api/pods/join', methods=['POST'])
+@jwt_required()
+def join_pod():
+    user_id = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    pod_code = data.get('pod_code', '').strip().upper()
+
+    db = get_db()
+    pod = db.pods.find_one({"pod_code": pod_code})
+    if not pod:
+        return jsonify({"success": False, "error": "Invalid Pod Code"}), 404
+        
+    if user_id in pod.get("members", []):
+        return jsonify({"success": True, "message": "Already a member", "pod_id": str(pod["_id"])}), 200
+
+    db.pods.update_one({"_id": pod["_id"]}, {"$addToSet": {"members": user_id}})
+    return jsonify({"success": True, "pod_id": str(pod["_id"])}), 200
+
+
+@app.route('/api/pods/my', methods=['GET'])
+@jwt_required()
+def my_pods():
+    user_id = get_jwt_identity()
+    db = get_db()
+    pods_cursor = db.pods.find({"members": user_id})
+    pods = []
+    for p in pods_cursor:
+        pods.append({
+            "id": str(p["_id"]),
+            "name": p.get("name"),
+            "pod_code": p.get("pod_code"),
+            "member_count": len(p.get("members", []))
+        })
+    return jsonify({"success": True, "pods": pods}), 200
+
+
+@app.route('/api/pods/<pod_id>', methods=['GET'])
+@jwt_required()
+def get_pod_details(pod_id):
+    user_id = get_jwt_identity()
+    db = get_db()
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+
+    if not pod or user_id not in pod.get("members", []):
+        return jsonify({"success": False, "error": "Pod not found or access denied"}), 404
+
+    # Fetch member names
+    members_map = {}
+    valid_object_ids = [ObjectId(m) for m in pod.get("members", []) if len(m) == 24]
+    
+    if valid_object_ids:
+        members_cursor = db.users.find({"_id": {"$in": valid_object_ids}})
+        for user in members_cursor:
+            members_map[str(user["_id"])] = user.get("name", "Unknown")
+
+    for m in pod.get("members", []):
+        if m not in members_map:
+            try:
+                u = db.users.find_one({"_id": ObjectId(m)})
+                if u: members_map[m] = u.get("name", "Unknown")
+            except:
+                members_map[m] = "Unknown"
+
+    return jsonify({
+        "success": True,
+        "pod": {
+            "id": str(pod["_id"]),
+            "name": pod.get("name"),
+            "pod_code": pod.get("pod_code"),
+            "members": members_map,
+            "goals": pod.get("goals"),
+            "weekly_challenge": pod.get("weekly_challenge"),
+            "daily_tasks": pod.get("daily_tasks", []),
+            "task_completions": pod.get("task_completions", {}),
+        }
+    }), 200
+
+
+@app.route('/api/pods/<pod_id>/chat', methods=['GET', 'POST'])
+@jwt_required()
+def pod_chat(pod_id):
+    user_id = get_jwt_identity()
+    db = get_db()
+    
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+
+    if not pod or user_id not in pod.get("members", []):
+        return jsonify({"success": False, "error": "Pod not found or access denied"}), 404
+
+    if request.method == 'GET':
+        return jsonify({"success": True, "chat_history": pod.get("chat_history", [])}), 200
+        
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or {}
+        message = data.get('message', '').strip()
+        if not message:
+            return jsonify({"success": False, "error": "Message required"}), 400
+            
+        user = db.users.find_one({"_id": ObjectId(user_id)})
+        sender_name = user.get("name", "User") if user else "User"
+        
+        chat_msg = {
+            "sender_id": user_id,
+            "sender_name": sender_name,
+            "message": message,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        db.pods.update_one({"_id": pod["_id"]}, {"$push": {"chat_history": chat_msg}})
+        return jsonify({"success": True, "message": chat_msg}), 200
+
+
+@app.route('/api/pods/<pod_id>/tasks', methods=['PUT'])
+@jwt_required()
+def update_pod_task(pod_id):
+    user_id = get_jwt_identity()
+    db = get_db()
+    data = request.get_json(silent=True) or {}
+    task_id = data.get("task_id")
+    completed = data.get("completed", True)
+    
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+
+    if not pod or user_id not in pod.get("members", []):
+        return jsonify({"success": False, "error": "Access denied"}), 404
+
+    update_op = "$addToSet" if completed else "$pull"
+    db.pods.update_one(
+        {"_id": pod["_id"]},
+        {update_op: {f"task_completions.{task_id}": user_id}}
+    )
+    
+    return jsonify({"success": True}), 200
 
 if __name__ == '__main__':
     print("\n" + "="*60)

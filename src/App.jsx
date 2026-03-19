@@ -14,6 +14,8 @@ import VARKContentPage from './pages/VARKContent';
 import Questionnaire from './pages/Questionnaire';
 import VARKResult from './pages/VARKResult';
 import LearningContent from './pages/LearningContent';
+import StudyPodsDashboard from './pages/StudyPodsDashboard';
+import StudyPodDetail from './pages/StudyPodDetail';
 import Profile from './pages/Profile';
 import Navbar from './components/Navbar';
 
@@ -53,6 +55,8 @@ function App() {
             <Route path="/vark-result" element={<ProtectedRoute><VARKResult /></ProtectedRoute>} />
             <Route path="/vark" element={<ProtectedRoute><MainLayout><VARKContentPage /></MainLayout></ProtectedRoute>} />
             <Route path="/learning" element={<ProtectedRoute><MainLayout><LearningContent /></MainLayout></ProtectedRoute>} />
+            <Route path="/pods" element={<ProtectedRoute><MainLayout><StudyPodsDashboard /></MainLayout></ProtectedRoute>} />
+            <Route path="/pods/:podId" element={<ProtectedRoute><MainLayout><StudyPodDetail /></MainLayout></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
