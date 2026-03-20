@@ -314,13 +314,7 @@ const LearningContent = () => {
                 </div>
             )}
 
-            {/* ── Info Bar ── */}
-            {!loading && filtered.length > 0 && (
-                <div className="lc-info-bar">
-                    <span className="lc-info-badge">AIMC-Bandit</span>
-                    <p>Content sequences adapt after each session via Bayesian inference and LinUCB contextual bandits.</p>
-                </div>
-            )}
+
 
             {/* ── CapsuleViewer Modal ── */}
             {selectedTopic && (
