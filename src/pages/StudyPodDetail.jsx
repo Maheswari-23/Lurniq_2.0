@@ -274,7 +274,7 @@ const StudyPodDetail = () => {
             await fetch(`${API_BASE_URL}/pods/${podId}/battle/start`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('lurniq_token')}` },
-                body: JSON.stringify({ topic: pod.weekly_challenge || 'Computer Science' })
+                body: JSON.stringify({ topic: pod.weekly_challenge || 'api quiz' })
             });
             await loadData();
             setShowBattle(true);

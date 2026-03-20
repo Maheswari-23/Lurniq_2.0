@@ -1650,7 +1650,7 @@ def start_pod_battle(pod_id):
     user_id = get_jwt_identity()
     db = get_db()
     data = request.get_json(silent=True) or {}
-    topic = data.get('topic', 'computer science basics').strip()
+    topic = data.get('topic', 'api quiz').strip()
 
     try:
         pod = db.pods.find_one({"_id": ObjectId(pod_id)})
@@ -1689,7 +1689,7 @@ def start_pod_battle(pod_id):
         "topic": topic,
         "started_by": user_id,
         "questions": questions,
-        "scores": {},  # { user_id: int_score }
+        "scores": {m_id: 0 for m_id in pod.get("members", [])},  # { user_id: int_score }
         "start_time": datetime.now(timezone.utc).isoformat()
     }
     
