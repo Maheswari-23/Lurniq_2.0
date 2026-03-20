@@ -313,100 +313,40 @@ def forgot_password():
 @app.route('/api/chatbot', methods=['POST'])
 @jwt_required()
 def chatbot():
-    """AI Tutor chatbot — answers any CS/programming question with VARK-tailored explanation."""
+    """General AI Assistant — answers programming questions and helps with Lurniq."""
     data = request.get_json(silent=True) or {}
-    question = data.get('question', '').strip().lower()
+    question = data.get('question', '').strip()
     vark_style = data.get('vark_style', 'Visual')
     persona = data.get('persona', 'Default').strip()
 
     if groq_client:
         try:
-            persona_prompt = "Explain in a standard educational format." if persona == 'Default' else f"Explain using {persona} analogies and terms."
-            system_prompt = f"You are a helpful AI Computer Science tutor. The student is a '{vark_style}' learner. {persona_prompt} Keep your answer concise (under 150 words) and directly address the user's question without any markdown formatting."
+            persona_prompt = "Explain in a standard format." if persona == 'Default' else f"Explain using {persona} analogies."
+            system_prompt = (
+                "You are the Lurniq General AI Assistant, a friendly and expert computer science tutor. "
+                "Help students with doubts, explain concepts, and assist with any programming questions. "
+                "Keep your answer concise (under 200 words) and do not use markdown formatting like bold in your response."
+            )
             
-            # Check for YouTube URL
             yt_match = re.search(r'(?:v=|\/)([0-9A-Za-z_-]{11}).*', question)
             if yt_match:
                 video_id = yt_match.group(1)
                 try:
                     transcript = YouTubeTranscriptApi.get_transcript(video_id)
                     text = " ".join([t['text'] for t in transcript])
-                    # truncate if too long (keep first ~3000 chars)
-                    text_chunk = text[:3000]
-                    question = f"Please summarize the following educational video transcript in 2 sentences. Transcript limit: {text_chunk}"
-                except Exception as e:
-                    print(f"Transcript error: {e}")
-                    return jsonify({'answer': f"I detected a YouTube link, but couldn't fetch the transcript: {str(e)}", 'vark_style': vark_style, 'persona': persona}), 200
+                    question = f"Summarize this transcript and address any doubts: {text[:3000]}"
+                except: pass
 
             chat_completion = groq_client.chat.completions.create(
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": question}
-                ],
+                messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": question}],
                 model="llama-3.3-70b-versatile",
                 temperature=0.7,
             )
-            answer = chat_completion.choices[0].message.content
-            return jsonify({'answer': answer, 'vark_style': vark_style, 'persona': persona}), 200
+            return jsonify({'answer': chat_completion.choices[0].message.content, 'vark_style': vark_style, 'persona': persona}), 200
         except Exception as e:
-            print("Groq generated chatbot error:", e)
+            print("Chatbot error:", e)
 
-    # Curated VARK-tailored answer bank
-    ANSWERS = {
-        'closure': {
-            'Visual':      'A closure is a function + its surrounding environment. Imagine a backpack 🎒: the inner function carries variables from the outer scope with it, even after the outer function finishes.',
-            'Auditory':    'Think of closures as a "remember me" feature. When you call an outer function, it creates a private scope. The inner function says "I remember everything from when I was born!"',
-            'Reading':     'A closure is formed when a nested function references variables from its enclosing scope. The inner function retains a reference to those variables even after the enclosing function has returned. This enables data encapsulation and factory functions.',
-            'Kinesthetic': 'Try this: def counter():\n    count = 0\n    def inc(): nonlocal count; count += 1; return count\n    return inc\nc = counter(); print(c(), c(), c())  # 1 2 3\nThe inner function "closes over" count!',
-        },
-        'recursion': {
-            'Visual':      'Recursion = a function calling itself in smaller steps.\nfact(4) → 4 × fact(3) → 4 × 3 × fact(2) → ... → 24\nBase case stops the chain. Visualise it as a shrinking Russian doll 🪆.',
-            'Auditory':    'Recursion is like directions that say "go one step north, then follow the same directions from there." It keeps giving the same instruction until you hit a dead end (base case).',
-            'Reading':     'Recursion: a function f calls itself with a strictly smaller input. Base case: terminates the chain. Recursive case: reduces the problem. Time complexity is often O(branches^depth).',
-            'Kinesthetic': 'Write: def fib(n):\n    if n <= 1: return n\n    return fib(n-1) + fib(n-2)\nprint([fib(i) for i in range(8)])\nTrace the call tree by hand to understand the execution.',
-        },
-        'sorting': {
-            'Visual':      'Sorting algorithms compared:\nBubble  → O(n²) — swaps neighbours\nMerge   → O(n log n) — split, sort, merge\nQuick   → O(n log n) avg — pivot partitioning\nPython uses TimSort (hybrid merge+insertion).',
-            'Auditory':    'Bubble sort: repeatedly compare adjacent items and swap if out of order — like bubbles rising to the top. Merge sort: "divide and conquer — split the list, sort each half, merge back together."',
-            'Reading':     'Sorting algorithms: Bubble O(n²) in-place stable. Insertion O(n²) best O(n). Merge O(n log n) stable not in-place. Quick O(n log n) avg O(n²) worst in-place. Python`s sort uses TimSort — O(n log n) worst, O(n) best.',
-            'Kinesthetic': 'Run this: lst = [5,3,8,1,9,2]\nlst.sort()  # in-place TimSort\nprint(lst)   # [1,2,3,5,8,9]\nAlso try: sorted(lst, reverse=True)',
-        },
-        'hashing': {
-            'Visual':      'Hash map = array of buckets. A hash function converts your key to an index:\nkey → hash(key) % array_size → bucket index\nLike filing cabinets 🗄️ — the label tells you which drawer to open in O(1).',
-            'Auditory':    'Hashing is a secret formula that converts any key into a number (the bucket index). Same key always gives the same index. Collisions happen when two keys hash to the same bucket.',
-            'Reading':     'A hash function maps keys to indices in O(1) average. Collision resolution: chaining (linked list per bucket) or open addressing (linear/quadratic probing). Load factor = items / buckets; rehash when > 0.75.',
-            'Kinesthetic': 'd = {}\nd["name"] = "Alice"\nd["age"] = 25\nprint(d["name"])  # O(1) lookup\nprint(hash("name"))  # see the actual hash value',
-        },
-        'big-o': {
-            'Visual':      'Big-O growth rates (slowest to fastest growing):\nO(1) — constant    e.g. dict lookup\nO(log n) — binary search\nO(n) — single loop\nO(n log n) — merge sort\nO(n²) — nested loops\nO(2ⁿ) — recursive fibonacci',
-            'Auditory':    'Big-O tells you "how does the runtime change as input doubles?" O(1): stays the same. O(n): doubles. O(n²): quadruples. O(log n): increases by just 1 step. Aim for as flat as possible.',
-            'Reading':     'Big-O notation describes worst-case asymptotic growth. Definition: f(n) is O(g(n)) if ∃ c,n₀ such that f(n) ≤ c·g(n) for all n > n₀. Drop constants and lower terms. Common classes: O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(2ⁿ).',
-            'Kinesthetic': 'Count operations:\nfor i in range(n):         # O(n)\n    for j in range(n):     # O(n²) total\n        pass\nbinary_search([...], x)    # O(log n)',
-        },
-        'oop': {
-            'Visual':      'OOP pillars visualised:\nClass = blueprint   Object = built instance\n┌─ Encapsulation: data + methods bundled\n├─ Inheritance:   Dog(Animal) → reuse\n├─ Polymorphism:  dog.speak() vs cat.speak()\n└─ Abstraction:   hide internals',
-            'Auditory':    'OOP is about objects that know things (attributes) and can do things (methods). Inheritance is "is-a" (Dog is-an Animal). Encapsulation is bundling state with the behaviour that changes it.',
-            'Reading':     'OOP: model software as classes (blueprints) and objects (instances). Four pillars: Encapsulation (bundle data + methods), Inheritance (subclass reuses parent), Polymorphism (same interface, different behaviour), Abstraction (expose interface, hide implementation).',
-            'Kinesthetic': 'class Animal:\n    def __init__(self, name):\n        self.name = name\n    def speak(self): pass\n\nclass Dog(Animal):\n    def speak(self): return f"{self.name} says Woof!"\n\nprint(Dog("Rex").speak())',
-        },
-    }
-
-    # Match question to answer key
-    answer = None
-    for key, responses in ANSWERS.items():
-        if key in question:
-            answer = responses.get(vark_style, responses.get('Reading', ''))
-            break
-
-    if not answer:
-        style_tip = {'Visual': 'diagrams and visual examples', 'Auditory': 'spoken analogies', 'Reading': 'detailed definitions', 'Kinesthetic': 'hands-on code exercises'}
-        answer = (
-            f"Great question! As a {vark_style} learner, you'll benefit most from {style_tip.get(vark_style, 'practice')}. "
-            f"For \"{data.get('question', 'this topic')}\", I recommend: searching MDN, Python docs, or GeeksForGeeks "
-            f"and looking for {style_tip.get(vark_style, 'examples')} on the topic."
-        )
-
-    return jsonify({'answer': answer, 'vark_style': vark_style}), 200
+    return jsonify({'answer': "I'm sorry, I'm having trouble connecting right now.", 'vark_style': vark_style}), 500
 
 
 @app.route('/api/upload_to_chat', methods=['POST'])
@@ -1482,7 +1422,7 @@ def get_pod_details(pod_id):
     for m_id in pod.get("members", []):
         u = db.users.find_one({"_id": ObjectId(m_id)})
         if u:
-            members[m_id] = u.get("name")
+            members[m_id] = u.get("name", "Unknown")
     
     pod_data = {
         "id": str(pod["_id"]),
@@ -1513,41 +1453,12 @@ def delete_pod(pod_id):
     if not pod:
         return jsonify({"success": False, "error": "Pod not found"}), 404
 
-    # Authorization: Only members can delete (or we could restrict to creator, but currently no creator field)
+    # Authorization: Only members can delete
     if user_id not in pod.get("members", []):
         return jsonify({"success": False, "error": "Access denied"}), 403
 
     db.pods.delete_one({"_id": ObjectId(pod_id)})
     return jsonify({"success": True, "message": "Pod deleted successfully"}), 200
-    members_map = {}
-    valid_object_ids = [ObjectId(m) for m in pod.get("members", []) if len(m) == 24]
-    
-    if valid_object_ids:
-        members_cursor = db.users.find({"_id": {"$in": valid_object_ids}})
-        for user in members_cursor:
-            members_map[str(user["_id"])] = user.get("name", "Unknown")
-
-    for m in pod.get("members", []):
-        if m not in members_map:
-            try:
-                u = db.users.find_one({"_id": ObjectId(m)})
-                if u: members_map[m] = u.get("name", "Unknown")
-            except:
-                members_map[m] = "Unknown"
-
-    return jsonify({
-        "success": True,
-        "pod": {
-            "id": str(pod["_id"]),
-            "name": pod.get("name"),
-            "pod_code": pod.get("pod_code"),
-            "members": members_map,
-            "goals": pod.get("goals"),
-            "weekly_challenge": pod.get("weekly_challenge"),
-            "daily_tasks": pod.get("daily_tasks", []),
-            "task_completions": pod.get("task_completions", {}),
-        }
-    }), 200
 
 
 @app.route('/api/pods/<pod_id>/chat', methods=['GET', 'POST'])
@@ -1896,7 +1807,9 @@ def generate_concept_lens():
             context_text = f"YouTube Transcript Content: {full_transcript[:8000]}"
             if not topic: topic = "YouTube Video Content"
         except Exception as e:
-            return jsonify({"success": False, "error": f"Could not parse YouTube link: {str(e)}"}), 400
+            print(f"YouTube Transcript Fetch Error: {e}")
+            context_text = f"Note: A YouTube link was provided ({link}), but the transcript could not be automatically retrieved. Please use your internal knowledge about this video or the general topic to generate the explanation and modules."
+            if not topic: topic = "YouTube Video Search"
             
     # 2. Handle PDF File
     elif file and file.filename.endswith('.pdf'):
