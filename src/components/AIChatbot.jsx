@@ -3,7 +3,7 @@
 // After each bot reply, shows "+ Add to Learning Hub" button to add
 // the topic as a new custom module with content across all 4 VARK styles.
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2, Bot, PlusCircle, FileUp } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Bot, FileUp } from 'lucide-react';
 import API_BASE_URL from '../config.js';
 
 const BUILTIN_IDS = new Set([
@@ -65,30 +65,6 @@ const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default', inline = false }
 
     useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, open]);
 
-    const addToHub = (question, answer) => {
-        if (!window.__addCustomTopic) return;
-        
-        let id = slugify(question);
-        let label = question.slice(0, 60);
-        
-        if (question.startsWith('doc:')) {
-            id = question;
-            label = "Uploaded PDF Document";
-        } else if (question.includes('youtube.com') || question.includes('youtu.be')) {
-            id = question; 
-        }
-
-        if (BUILTIN_IDS.has(id)) return; // don't add built-ins again
-        window.__addCustomTopic({
-            id,
-            label,
-            description: answer.slice(0, 120) + '…',
-            difficulty: 2,
-            category: 'My Topics',
-            chatbotAnswer: answer,
-        });
-    };
-
     const sendMessage = async (text) => {
         const q = (text || input).trim();
         if (!q || loading) return;
@@ -112,13 +88,9 @@ const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default', inline = false }
             setLoading(false);
         }
 
-        // Append bot reply + "Add to Hub" action
-        const id = slugify(q);
-        const isBuiltin = BUILTIN_IDS.has(id);
         setMessages(m => [
             ...m,
             { role: 'bot', text: answer },
-            ...(!isBuiltin ? [{ role: 'action', question: q, answer }] : []),
         ]);
     };
 
@@ -164,9 +136,7 @@ const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default', inline = false }
             @keyframes chatPop { from{opacity:0;transform:scale(0.85) translateY(16px)} to{opacity:1;transform:none} }
             .chat-msg-bot  { background:#F5F3FF; color:#111827; border-radius:14px 14px 14px 4px; align-self:flex-start; }
             .chat-msg-user { background:linear-gradient(90deg,#F97AFE,#7B61FF); color:white; border-radius:14px 14px 4px 14px; align-self:flex-end; }
-            .add-hub-btn   { display:inline-flex; align-items:center; gap:5px; margin-top:6px; padding:5px 12px; background:#F0FDF4; color:#059669; border:1px solid #A7F3D0; border-radius:99px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; align-self:flex-start; transition:all 0.18s; }
-            .add-hub-btn:hover { background:#DCFCE7; border-color:#6EE7B7; }
-            .add-hub-btn.added { background:#E0FFF4; color:#047857; cursor:default; opacity:0.7; }
+            .chat-msg-user { background:linear-gradient(90deg,#F97AFE,#7B61FF); color:white; border-radius:14px 14px 4px 14px; align-self:flex-end; }
           `}</style>
 
                     {/* Header */}
@@ -178,18 +148,11 @@ const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default', inline = false }
 
                     {/* Messages */}
                     <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', minHeight: 0 }}>
-                        {messages.map((m, i) => {
-                            if (m.role === 'action') {
-                                return (
-                                    <AddToHubButton key={i} question={m.question} answer={m.answer} onAdd={addToHub} />
-                                );
-                            }
-                            return (
-                                <div key={i} className={m.role === 'bot' ? 'chat-msg-bot' : 'chat-msg-user'} style={{ padding: '10px 13px', fontSize: '13px', lineHeight: 1.55, maxWidth: '85%' }}>
-                                    {m.text}
-                                </div>
-                            );
-                        })}
+                        {messages.map((m, i) => (
+                            <div key={i} className={m.role === 'bot' ? 'chat-msg-bot' : 'chat-msg-user'} style={{ padding: '10px 13px', fontSize: '13px', lineHeight: 1.55, maxWidth: '85%' }}>
+                                {m.text}
+                            </div>
+                        ))}
                         {loading && (
                             <div className="chat-msg-bot" style={{ padding: '10px 13px', display: 'flex', gap: '6px', alignItems: 'center' }}>
                                 <Loader2 size={14} color="#7B61FF" style={{ animation: 'spin 1s linear infinite' }} />
@@ -234,22 +197,6 @@ const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default', inline = false }
         </>
     );
 };
-
-// ── "Add to Learning Hub" button — tracks own added state ──────────
-function AddToHubButton({ question, answer, onAdd }) {
-    const [added, setAdded] = useState(false);
-    const handleAdd = () => {
-        if (added) return;
-        onAdd(question, answer);
-        setAdded(true);
-    };
-    return (
-        <button className={`add-hub-btn${added ? ' added' : ''}`} onClick={handleAdd}>
-            <PlusCircle size={13} />
-            {added ? 'Added to Learning Hub ✓' : '+ Add to Learning Hub'}
-        </button>
-    );
-}
 
 // ── Client-side fallback when backend offline ──────────────────────
 function generateFallback(question, style) {

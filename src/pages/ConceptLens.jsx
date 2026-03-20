@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Bot, Search, Loader2, Sparkles, SlidersHorizontal, Eye, Headphones, BookOpen, Activity, ArrowRight, Plus, Link as LinkIcon, FileText } from 'lucide-react';
+import { Bot, Search, Loader2, Sparkles, SlidersHorizontal, Eye, Headphones, BookOpen, Activity, Link as LinkIcon, FileText } from 'lucide-react';
 import MicroCapsule from '../components/phase2/MicroCapsule';
 import { useAuth } from '../context/AuthContext';
 import API_BASE_URL from '../config.js';
@@ -27,37 +27,6 @@ const ConceptLens = () => {
     const [loading, setLoading] = useState(false);
     const [lensData, setLensData] = useState(null);
     const [error, setError] = useState(null);
-    const [addedToHub, setAddedToHub] = useState(false);
-
-    const addToHub = () => {
-        if (!topic || !lensData) return;
-        const newTopic = {
-            id: `custom_${topic.trim().toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`,
-            label: topic.trim(),
-            description: lensData.explanation.slice(0, 120) + '...',
-            difficulty: 4,
-            category: 'My Topics',
-            chatbotAnswer: lensData.explanation,
-            varkContent: lensData.vark,
-            complexity: complexity,
-            originalTopic: topic.trim()
-        };
-        // Use window hook if Learning Hub is open, else save to localStorage directly
-        if (typeof window.__addCustomTopic === 'function') {
-            window.__addCustomTopic(newTopic);
-        } else {
-            try {
-                const myId = currentUser?._id || currentUser?.id;
-                const key = myId ? `lurniq_custom_topics_${myId}` : 'lurniq_custom_topics';
-                const existing = JSON.parse(localStorage.getItem(key) || '[]');
-                if (!existing.find(t => t.id === newTopic.id)) {
-                    localStorage.setItem(key, JSON.stringify([...existing, newTopic]));
-                }
-            } catch { /* ignore */ }
-        }
-        setAddedToHub(true);
-        setTimeout(() => setAddedToHub(false), 3000);
-    };
 
 
     const handleSearch = async (e) => {
@@ -248,20 +217,6 @@ const ConceptLens = () => {
                             <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Bot size={24} color="#7B61FF" /> AI Explanation
                             </h2>
-                            <button 
-                                onClick={addToHub}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', 
-                                    background: addedToHub ? '#ECFDF5' : '#F5F3FF', 
-                                    color: addedToHub ? '#059669' : '#7B61FF', 
-                                    border: `1px solid ${addedToHub ? '#6EE7B7' : '#C4B5FD'}`, 
-                                    borderRadius: '99px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
-                                }}
-                                onMouseEnter={e => !addedToHub && (e.currentTarget.style.background = '#EDE9FE')}
-                                onMouseLeave={e => !addedToHub && (e.currentTarget.style.background = '#F5F3FF')}
-                            >
-                                <Plus size={16} /> {addedToHub ? '✓ Added to Hub!' : 'Add to Learning Hub'}
-                            </button>
                         </div>
                         <div style={{ color: '#374151', lineHeight: '1.8', fontSize: '16px' }}>
                             {lensData.explanation.split('\n').map((para, i) => (
