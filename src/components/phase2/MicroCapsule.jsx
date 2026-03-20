@@ -96,10 +96,19 @@ const AuditoryContent = ({ content }) => {
 
         const speakNext = () => {
             if (idx >= parts.length) { setSpeaking(false); setHighlight(-1); return; }
-            const utt = new SpeechSynthesisUtterance(parts[idx]);
-            utt.rate = 0.92;
-            utt.pitch = 1.0;
-            // map parts index to narrative bubble index (offset by analogy line)
+            
+            let text = parts[idx];
+            let isHost2 = typeof text === 'string' && text.toLowerCase().startsWith("host 2:");
+            let isHost1 = typeof text === 'string' && text.toLowerCase().startsWith("host 1:");
+            
+            let cleanText = typeof text === 'string' ? text.replace(/^(Host 1:|Host 2:)\s*/i, '') : text;
+
+            const utt = new SpeechSynthesisUtterance(cleanText);
+            utt.rate = 0.95;
+            
+            if (isHost1) utt.pitch = 1.0;
+            if (isHost2) utt.pitch = 1.4;
+
             const bubbleIdx = analogy ? idx - 1 : idx;
             setHighlight(bubbleIdx >= 0 && bubbleIdx < narrative.length ? bubbleIdx : -1);
             utt.onend = () => { idx++; speakNext(); };
@@ -116,10 +125,13 @@ const AuditoryContent = ({ content }) => {
     };
 
     // Speak just one bubble on click
-    const speakBubble = (text) => {
+    const speakBubble = (text, isHost1, isHost2) => {
         window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.rate = 0.92;
+        let cleanText = typeof text === 'string' ? text.replace(/^(Host 1:|Host 2:)\s*/i, '') : text;
+        const u = new SpeechSynthesisUtterance(cleanText);
+        u.rate = 0.95;
+        if (isHost1) u.pitch = 1.0;
+        if (isHost2) u.pitch = 1.4;
         window.speechSynthesis.speak(u);
     };
 
@@ -152,18 +164,29 @@ const AuditoryContent = ({ content }) => {
                         </button>
                     </div>
                     <div className="mc-bubbles">
-                        {narrative.map((line, i) => (
+                        {narrative.map((line, i) => {
+                            const isHost2 = typeof line === 'string' && line.toLowerCase().startsWith('host 2:');
+                            const isHost1 = typeof line === 'string' && line.toLowerCase().startsWith('host 1:');
+                            const isPodcast = isHost1 || isHost2;
+                            const name = isHost1 ? 'Host 1' : isHost2 ? 'Host 2' : '';
+                            const text = isPodcast ? line.replace(/^(Host 1:|Host 2:)\s*/i, '') : line;
+                            const side = (isHost2 || (!isPodcast && i % 2 !== 0)) ? 'right' : 'left';
+                            
+                            return (
                             <div
                                 key={i}
-                                className={`mc-bubble mc-bubble--${i % 2 === 0 ? 'left' : 'right'}${highlight === i ? ' mc-bubble--speaking' : ''}`}
-                                onClick={() => speakBubble(line)}
+                                className={`mc-bubble mc-bubble--${side}${highlight === i ? ' mc-bubble--speaking' : ''}`}
+                                onClick={() => speakBubble(text, isHost1, isHost2)}
                                 title="Click to hear this line"
                                 style={{ cursor: 'pointer' }}
                             >
-                                <span className="mc-bubble-avatar">{i % 2 === 0 ? '▶' : '◆'}</span>
-                                <p className="mc-bubble-text">{line}</p>
+                                <span className="mc-bubble-avatar">{isHost2 ? '🎙️' : isHost1 ? '🎧' : (i % 2 === 0 ? '▶' : '◆')}</span>
+                                <div className="mc-bubble-content">
+                                    {isPodcast && <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#9CA3AF', marginBottom: '2px', textTransform: 'uppercase' }}>{name}</div>}
+                                    <p className="mc-bubble-text">{text}</p>
+                                </div>
                             </div>
-                        ))}
+                        )})}
                     </div>
                     <p className="mc-audio-hint">Click any bubble to hear it individually, or press Play to hear everything.</p>
                 </div>

@@ -1191,9 +1191,15 @@ def generate_capsule():
             # Generate personalized template via Groq
             base_template = CAPSULE_TEMPLATES.get((topic, modality), DEFAULT_TEMPLATE.copy())
             
+            mermaid_rules = ""
             if modality == "Visual":
                 base_template["mermaid"] = "graph TD\n  A[Start] --> B[Generate full valid Mermaid.js flowchart code for this topic]"
+                mermaid_rules = "RULE for 'mermaid': You MUST use safe, alphanumeric node labels. Do NOT use quotes (\"), parentheses (), brackets [] {}, or any special characters inside the node descriptions as they break the Mermaid parser. Example: A[Concept] --> B[Detail]."
             
+            audio_rules = ""
+            if modality == "Auditory":
+                audio_rules = "RULE for 'narrative': Format the array as a 2-host engaging podcast dialogue (like NotebookLM). Alternate strings between 'Host 1: [text]' and 'Host 2: [text]'. Make it sound natural, conversational, and enthusiastic."
+
             # Request dynamic quizzes for all topics generated via AI
             base_template["quiz"] = [
                 {"q": "Generate a multiple choice question about the topic", "options": ["Option A", "Option B", "Option C", "Option D"], "answer": 0},
@@ -1206,6 +1212,9 @@ def generate_capsule():
             system_prompt = f"""You are an educational AI. Generate a JSON response for a micro-learning capsule about {topic_context}. 
 The learner style is '{modality}'.
 {persona_instruction}
+{mermaid_rules}
+{audio_rules}
+
 Your response MUST be raw JSON that matches this structure exactly, filling in the content with the appropriate theme:
 {json.dumps(base_template, indent=2)}
 
