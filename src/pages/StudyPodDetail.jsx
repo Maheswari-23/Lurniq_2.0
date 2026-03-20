@@ -6,7 +6,7 @@ import {
     Loader2, Send, CheckCircle2, Circle, ArrowLeft, Target, Trophy,
     Video, KanbanSquare, Bot, Plus, Pencil, Trash2, Check, X, Save,
     MessageCircle, BookOpen, ChevronDown, ChevronUp, Copy, PenTool, StickyNote, Download,
-    Sparkles, SlidersHorizontal, Eye, Headphones, Activity, Link as LinkIcon, FileText
+    Sparkles, SlidersHorizontal, Eye, Headphones, Activity, Link as LinkIcon, FileText, Search
 } from 'lucide-react';
 import MicroCapsule from '../components/phase2/MicroCapsule';
 import PodVideoCall from '../components/phase2/PodVideoCall';
