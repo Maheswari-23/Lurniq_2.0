@@ -5,7 +5,7 @@
   --c-visual:      #7B61FF;
   --c-auditory:    #F97AFE;
   --c-reading:     #3B82F6;
-  --c-kinesthetic: #10B981;
+  --c-kinesthetic: #F97316;
   --c-gradient:    linear-gradient(135deg, #F97AFE 0%, #7B61FF 100%);
   --c-bg:          #F8F9FF;
   --c-surface:     #FFFFFF;
@@ -152,7 +152,7 @@ body { font-family: 'Inter', sans-serif; background: var(--c-bg); color: var(--c
 .visual-card   .card-accent { background: linear-gradient(90deg, #7B61FF, #A78BFA); }
 .auditory-card .card-accent { background: linear-gradient(90deg, #F97AFE, #EC4899); }
 .reading-card  .card-accent { background: linear-gradient(90deg, #3B82F6, #6366F1); }
-.kinesthetic-card .card-accent { background: linear-gradient(90deg, #10B981, #34D399); }
+.kinesthetic-card .card-accent { background: linear-gradient(90deg, #F97316, #FB923C); }
 
 .card-inner {
   padding: 28px 30px;
@@ -205,7 +205,7 @@ body { font-family: 'Inter', sans-serif; background: var(--c-bg); color: var(--c
 .visual-card   .learning-badge { background: rgba(123,97,255,0.1);  color: var(--c-visual); }
 .auditory-card .learning-badge { background: rgba(249,122,254,0.1); color: #C026D3; }
 .reading-card  .learning-badge { background: rgba(59,130,246,0.1);  color: var(--c-reading); }
-.kinesthetic-card .learning-badge { background: rgba(16,185,129,0.1); color: var(--c-kinesthetic); }
+.kinesthetic-card .learning-badge { background: rgba(249,115,22,0.1); color: var(--c-kinesthetic); }
 
 .card-description {
   font-size: 0.95rem;
@@ -253,7 +253,7 @@ body { font-family: 'Inter', sans-serif; background: var(--c-bg); color: var(--c
 .visual-btn      { background: linear-gradient(135deg, #7B61FF, #A78BFA); box-shadow: 0 4px 16px rgba(123,97,255,0.35); }
 .auditory-btn    { background: linear-gradient(135deg, #C026D3, #F97AFE); box-shadow: 0 4px 16px rgba(192,38,211,0.35); }
 .reading-btn     { background: linear-gradient(135deg, #1D4ED8, #3B82F6); box-shadow: 0 4px 16px rgba(59,130,246,0.35); }
-.kinesthetic-btn { background: linear-gradient(135deg, #059669, #10B981); box-shadow: 0 4px 16px rgba(16,185,129,0.35); }
+.kinesthetic-btn { background: linear-gradient(135deg, #EA580C, #F97316); box-shadow: 0 4px 16px rgba(249,115,22,0.35); }
 
 /* ── Media ── */
 .media-container {
@@ -383,13 +383,13 @@ body { font-family: 'Inter', sans-serif; background: var(--c-bg); color: var(--c
 
 .droppable-area:hover {
   border-color: var(--c-kinesthetic);
-  background: rgba(16,185,129,0.08);
+  background: rgba(249,115,22,0.08);
 }
 
 .step-placeholder { color: #6B7280; font-size: 1rem; }
 
 .dropped-item {
-  background: linear-gradient(135deg, #059669, #10B981);
+  background: linear-gradient(135deg, #EA580C, #F97316);
   color: white;
   padding: 10px 24px;
   border-radius: 8px;
@@ -411,7 +411,7 @@ body { font-family: 'Inter', sans-serif; background: var(--c-bg); color: var(--c
 }
 
 .draggable-label {
-  background: linear-gradient(135deg, #059669, #10B981);
+  background: linear-gradient(135deg, #EA580C, #F97316);
   color: white;
   padding: 10px 20px;
   border-radius: 10px;
@@ -419,11 +419,11 @@ body { font-family: 'Inter', sans-serif; background: var(--c-bg); color: var(--c
   user-select: none;
   font-weight: 700;
   font-size: 0.9rem;
-  box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+  box-shadow: 0 4px 12px rgba(249,115,22,0.3);
   transition: all 0.2s ease;
 }
 
-.draggable-label:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16,185,129,0.35); }
+.draggable-label:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(249,115,22,0.35); }
 .draggable-label:active { cursor: grabbing; transform: scale(1.04); }
 
 .success-message { color: #059669; font-weight: 800; font-size: 1.2rem; }

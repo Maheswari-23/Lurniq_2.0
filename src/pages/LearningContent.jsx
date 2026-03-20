@@ -29,8 +29,8 @@ const loadCustomTopics = () => {
 
 const DEFAULT_VARK = { style: 'Visual', allScores: { Visual: 0.4, Auditory: 0.2, Reading: 0.2, Kinesthetic: 0.2 } };
 const VARK_STYLES = ['Visual', 'Auditory', 'Reading', 'Kinesthetic'];
-const VARK_COLORS = { Visual: '#7B61FF', Auditory: '#F97AFE', Reading: '#4C1D95', Kinesthetic: '#10B981' };
-const VARK_TEXT = { Visual: '#7B61FF', Auditory: '#C026D3', Reading: '#4C1D95', Kinesthetic: '#059669' };
+const VARK_COLORS = { Visual: '#7B61FF', Auditory: '#F97AFE', Reading: '#4C1D95', Kinesthetic: '#F97316' };
+const VARK_TEXT = { Visual: '#7B61FF', Auditory: '#C026D3', Reading: '#4C1D95', Kinesthetic: '#EA580C' };
 
 const DIFFICULTY_META = {
     1: { label: 'Beginner', color: '#0EA5E9' },

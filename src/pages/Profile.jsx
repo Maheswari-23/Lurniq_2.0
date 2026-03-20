@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import API_BASE_URL from '../config.js';
 import { Eye, Headphones, BookOpen, Activity, UserCog, ShieldCheck, CheckCircle2, XCircle } from 'lucide-react';
 
-const VARK_COLORS = { Visual: '#7B61FF', Auditory: '#F97AFE', Reading: '#4C1D95', Kinesthetic: '#10B981' };
+const VARK_COLORS = { Visual: '#7B61FF', Auditory: '#F97AFE', Reading: '#4C1D95', Kinesthetic: '#F97316' };
 
 const Profile = () => {
     const { currentUser, updateUser } = useAuth();

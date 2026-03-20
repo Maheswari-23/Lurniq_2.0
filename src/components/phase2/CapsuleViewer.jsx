@@ -792,7 +792,7 @@ const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs
 
     const contentStartTime = useRef(null);
     const VARK_STYLES = ['Visual', 'Auditory', 'Reading', 'Kinesthetic'];
-    const VARK_COLORS = { Visual: '#7B61FF', Auditory: '#F97AFE', Reading: '#1D4ED8', Kinesthetic: '#059669' };
+    const VARK_COLORS = { Visual: '#7B61FF', Auditory: '#F97AFE', Reading: '#1D4ED8', Kinesthetic: '#F97316' };
 
     // Reload content every time activeModality changes
     useEffect(() => {

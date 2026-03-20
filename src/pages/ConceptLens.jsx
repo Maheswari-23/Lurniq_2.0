@@ -7,7 +7,7 @@ const COMPONENT_VARKS = [
     { id: 'Visual', icon: Eye, label: 'Watch It', color: '#7B61FF' },
     { id: 'Auditory', icon: Headphones, label: 'Hear It', color: '#F97AFE' },
     { id: 'Reading', icon: BookOpen, label: 'Read It', color: '#4C1D95' },
-    { id: 'Kinesthetic', icon: Activity, label: 'Do It', color: '#10B981' }
+    { id: 'Kinesthetic', icon: Activity, label: 'Do It', color: '#F97316' }
 ];
 
 const COMPLEXITIES = [
