@@ -36,6 +36,9 @@ const ConceptLens = () => {
             difficulty: 4,
             category: 'My Topics',
             chatbotAnswer: lensData.explanation,
+            varkContent: lensData.vark,
+            complexity: complexity,
+            originalTopic: topic.trim()
         };
         // Use window hook if Learning Hub is open, else save to localStorage directly
         if (typeof window.__addCustomTopic === 'function') {
@@ -158,7 +161,7 @@ const ConceptLens = () => {
                     </div>
 
                     <button type="submit" disabled={loading || (!topic && !link && !file)} style={{ background: 'linear-gradient(135deg, #F97AFE, #7B61FF)', color: 'white', border: 'none', padding: '16px', borderRadius: '16px', fontSize: '16px', fontWeight: 700, cursor: (loading || (!topic && !link && !file)) ? 'not-allowed' : 'pointer', opacity: (loading || (!topic && !link && !file)) ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                        {loading ? <Loader2 size={20} className="lucide-spin" /> : <><Bot size={20} /> Focus Lens</>}
+                        {loading ? <Loader2 size={20} className="lucide-spin" /> : <><Bot size={20} /> Concept Lens</>}
                     </button>
                 </form>
 

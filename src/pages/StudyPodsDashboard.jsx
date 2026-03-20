@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMyPods, createPod, joinPod } from '../services/podService';
-import { Users, Plus, Key, Loader2, ArrowRight } from 'lucide-react';
+import { getMyPods, createPod, joinPod, deletePod } from '../services/podService';
+import { Users, Plus, Key, Loader2, ArrowRight, MoreVertical, Trash2 } from 'lucide-react';
 
 const StudyPodsDashboard = () => {
     const navigate = useNavigate();
@@ -15,6 +15,18 @@ const StudyPodsDashboard = () => {
     const [goals, setGoals] = useState('');
     const [joinCode, setJoinCode] = useState('');
     const [error, setError] = useState(null);
+    const [showMenuFor, setShowMenuFor] = useState(null);
+
+    const handleDeletePod = async (e, podId) => {
+        e.stopPropagation();
+        if (!window.confirm('Are you sure you want to delete this pod? This action cannot be undone.')) return;
+        try {
+            await deletePod(podId);
+            loadPods();
+        } catch (e) {
+            setError(e.message);
+        }
+    };
 
     const loadPods = async () => {
         try {
@@ -82,7 +94,29 @@ const StudyPodsDashboard = () => {
                             onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = styles.card.boxShadow; e.currentTarget.style.borderColor = '#E5E7EB'; }}
                             onClick={() => navigate(`/pods/${pod.id}`)}
                         >
-                            <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#111827' }}>{pod.name}</h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', color: '#111827' }}>{pod.name}</h3>
+                                <div style={{ position: 'relative' }}>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); setShowMenuFor(showMenuFor === pod.id ? null : pod.id); }}
+                                        style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', color: '#9CA3AF' }}
+                                    >
+                                        <MoreVertical size={18} />
+                                    </button>
+                                    {showMenuFor === pod.id && (
+                                        <div style={{ position: 'absolute', right: 0, top: '24px', background: 'white', border: '1px solid #E5E7EB', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 10, width: '120px' }}>
+                                            <button 
+                                                onClick={(e) => handleDeletePod(e, pod.id)}
+                                                style={{ width: '100%', padding: '8px 12px', border: 'none', background: 'none', textAlign: 'left', fontSize: '13px', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }}
+                                                onMouseEnter={e => e.currentTarget.style.background = '#FEF2F2'}
+                                                onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                                            >
+                                                <Trash2 size={14} /> Delete Pod
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                             <p style={{ margin: 0, color: '#6B7280', fontSize: '14px' }}>Code: <strong>{pod.pod_code}</strong></p>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
                                 <span style={{ background: '#F3F4F6', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 500, color: '#374151' }}>

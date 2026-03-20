@@ -338,6 +338,7 @@ const LearningContent = () => {
                     varkProbs={probs}
                     onClose={handleViewerClose}
                     persona={activePersona}
+                    custom={selectedTopic}
                 />
             )}
 

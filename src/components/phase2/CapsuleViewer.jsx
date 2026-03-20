@@ -685,16 +685,25 @@ const FALLBACK_TEMPLATES = {
     },
 };
 
-function buildFallbackCapsule(topic, modality) {
+function buildFallbackCapsule(topic, modality, customOverride = null) {
     // Check if this is a custom chatbot-added topic
-    const customTopics = (() => { try { return JSON.parse(localStorage.getItem('lurniq_custom_topics') || '[]'); } catch { return []; } })();
-    const custom = customTopics.find(t => t.id === topic);
+    const custom = customOverride || (() => {
+        const customTopics = (() => { try { return JSON.parse(localStorage.getItem('lurniq_custom_topics') || '[]'); } catch { return []; } })();
+        return customTopics.find(t => t.id === topic);
+    })();
 
     if (custom?.chatbotAnswer) {
         const answer = custom.chatbotAnswer;
         const label = custom.label || topic;
         let content;
-        if (modality === 'Visual') {
+
+        // If we have pre-generated VARK content (from Concept Lens), use it!
+        if (custom.varkContent && custom.varkContent[modality]) {
+            content = custom.varkContent[modality];
+            if (!content.learning_objective) content.learning_objective = `Study ${label} (${modality})`;
+            if (!content.analogy) content.analogy = answer.slice(0, 150) + '...';
+        } 
+        else if (modality === 'Visual') {
             const sents = answer.split('. ').filter(s => s.trim().length > 5).slice(0, 4);
             const safeLabel = label.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 20);
             
@@ -781,7 +790,7 @@ function buildFallbackCapsule(topic, modality) {
 // ---------------------------------------------------------------------------
 // CapsuleViewer component
 // ---------------------------------------------------------------------------
-const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs, onClose, persona = 'Default' }) => {
+const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs, onClose, persona = 'Default', custom = null }) => {
     const [phase, setPhase] = useState('loading');
     const [capsule, setCapsule] = useState(null);
     const [error, setError] = useState(null);
@@ -805,7 +814,7 @@ const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs
         const isBuiltin = BUILTIN_IDS.includes(topic);
 
         // Step 1: Show local template immediately
-        const local = buildFallbackCapsule(topic, activeModality);
+        const local = buildFallbackCapsule(topic, activeModality, custom);
         setCapsule(local);
         setPhase('content');
         contentStartTime.current = Date.now();

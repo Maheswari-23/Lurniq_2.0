@@ -111,3 +111,12 @@ export const updateNotes = async (pod_id, notes) => {
     if (!res.ok) throw new Error("Error updating notes");
     return res.json();
 };
+
+export const deletePod = async (pod_id) => {
+    const res = await fetch(`${API_BASE_URL}/pods/${pod_id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+    });
+    if (!res.ok) throw new Error("Error deleting pod");
+    return res.json();
+};
