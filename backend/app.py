@@ -1927,7 +1927,7 @@ For Kinesthetic:
 If {complexity} is 'advanced', you MUST provide a Python coding challenge instead of match_pairs. For code challenges use EXACTLY this format:
 "challenge": {{ "instruction": "Write a python script...", "starter": "def foo():\\n    pass", "solution": "...", "expected_output": "..." }}
 If {complexity} is 'beginner' or 'intermediate', ONLY use "type": "match_pairs" with "pairs".
-For Visual: The mermaid MUST be a syntactically perfect Mermaid.js flowchart. Use ONLY alphanumeric characters for node IDs (e.g. A1, B2) and label text. Do NOT use any special characters, quotes, or brackets inside node labels.
+For Visual: The mermaid MUST be a syntactically perfect Mermaid.js flowchart starting with 'graph TD'. You MUST use double quotes for ALL node labels to avoid parsing errors with special characters. Example: A["User Login (v1.0)"] --> B["Success?"]. Do NOT use any special characters like brackets, parentheses, or quotes WITHOUT double-quoting the entire label.
 
 CRITICAL: Return ONLY the raw valid JSON object. Do not include markdown formatting or backticks around the JSON.
 """

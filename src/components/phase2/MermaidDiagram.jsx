@@ -25,11 +25,25 @@ const MermaidDiagram = ({ diagramCode, fallback }) => {
         const renderDiagram = async () => {
             if (!diagramCode) return;
             try {
-                // Remove Markdown block wrapper if AI includes it
+                // 1. Initial cleanup
                 let code = diagramCode.trim();
-                // Mermaid specific markdown stripping
-                code = code.replace(/^```mermaid/gmi, '');
-                code = code.replace(/```$/gmi, '');
+                
+                // 2. Remove ANY markdown code block wrappers (AI sometimes nests them)
+                code = code.replace(/```mermaid/gmi, '');
+                code = code.replace(/```/gmi, '');
+                
+                // 3. Extract only the portion that looks like a mermaid diagram
+                const mermaidMatch = code.match(/(graph\s+(?:TD|TB|LR|RL|BT)|sequenceDiagram|pie|gantt|classDiagram|stateDiagram|erDiagram|journey|gitGraph|mindmap|timeline)[\s\S]+/i);
+                if (mermaidMatch) {
+                    code = mermaidMatch[0];
+                }
+
+                // 4. Heuristic: Wrap unquoted labels in double quotes to prevent syntax errors with special chars
+                // Fixes: ID[Some Label] -> ID["Some Label"]
+                code = code.replace(/([a-zA-Z0-9_-]+)\[([^"\]\n]+)\]/g, '$1["$2"]');
+                // Fixes: ID(Some Label) -> ID("Some Label")
+                code = code.replace(/([a-zA-Z0-9_-]+)\(([^" \)\n]+)\)/g, '$1("$2")');
+                
                 code = code.trim();
 
                 const id = `mermaid-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
