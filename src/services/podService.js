@@ -101,3 +101,13 @@ export const updateGoals = async (pod_id, goals) => {
     if (!res.ok) throw new Error("Error updating goals");
     return res.json();
 };
+
+export const updateNotes = async (pod_id, notes) => {
+    const res = await fetch(`${API_BASE_URL}/pods/${pod_id}/notes`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ notes })
+    });
+    if (!res.ok) throw new Error("Error updating notes");
+    return res.json();
+};

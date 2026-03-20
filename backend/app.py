@@ -1416,6 +1416,7 @@ def create_pod():
         "creator_id": user_id,
         "members": [user_id],
         "goals": goals,
+        "notes": "",
         "weekly_challenge": weekly_challenge,
         "daily_tasks": [],
         "task_completions": {}, # mapping task_id -> list of user_ids who completed it
@@ -1636,6 +1637,23 @@ def update_pod_goals(pod_id):
     if not pod or user_id not in pod.get("members", []):
         return jsonify({"success": False, "error": "Access denied"}), 403
     db.pods.update_one({"_id": pod["_id"]}, {"$set": {"goals": goals}})
+    return jsonify({"success": True}), 200
+
+
+@app.route('/api/pods/<pod_id>/notes', methods=['PUT'])
+@jwt_required()
+def update_pod_notes(pod_id):
+    user_id = get_jwt_identity()
+    db = get_db()
+    data = request.get_json(silent=True) or {}
+    notes = data.get('notes', '').strip()
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+    if not pod or user_id not in pod.get("members", []):
+        return jsonify({"success": False, "error": "Access denied"}), 403
+    db.pods.update_one({"_id": pod["_id"]}, {"$set": {"notes": notes}})
     return jsonify({"success": True}), 200
 
 # ── Pod Boss Battles ─────────────────────────────────────────────────────────

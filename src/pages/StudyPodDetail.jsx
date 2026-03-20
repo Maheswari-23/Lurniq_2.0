@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getPodDetails, getChatHistory, sendChatMessage, toggleTask, addTask, editTask, deleteTask, updateGoals } from '../services/podService';
+import { getPodDetails, getChatHistory, sendChatMessage, toggleTask, addTask, editTask, deleteTask, updateGoals, updateNotes } from '../services/podService';
 import { useAuth } from '../context/AuthContext';
 import {
     Loader2, Send, CheckCircle2, Circle, ArrowLeft, Target, Trophy,
     Video, KanbanSquare, Bot, Plus, Pencil, Trash2, Check, X, Save,
-    MessageCircle, BookOpen, ChevronDown, ChevronUp, Copy, PenTool
+    MessageCircle, BookOpen, ChevronDown, ChevronUp, Copy, PenTool, StickyNote
 } from 'lucide-react';
 import PodVideoCall from '../components/phase2/PodVideoCall';
 import AIChatbot from '../components/AIChatbot';
@@ -223,6 +223,8 @@ const StudyPodDetail = () => {
     const [showAddTask, setShowAddTask] = useState(false);
     const [editingGoals, setEditingGoals] = useState(false);
     const [goalsText, setGoalsText] = useState('');
+    const [editingNotes, setEditingNotes] = useState(false);
+    const [notesText, setNotesText] = useState('');
     
     // Boss Battle State
     const [showBattle, setShowBattle] = useState(false);
@@ -237,6 +239,7 @@ const StudyPodDetail = () => {
             const [podRes, chatRes] = await Promise.all([getPodDetails(podId), getChatHistory(podId)]);
             setPod(podRes.pod);
             if (!editingGoals) setGoalsText(podRes.pod.goals || '');
+            if (!editingNotes) setNotesText(podRes.pod.notes || '');
             // Annotate messages with isMe flag
             setChat((chatRes.chat_history || []).map(m => ({ ...m, isMe: m.sender_id === myId })));
         } catch (e) { console.error(e); }
@@ -369,6 +372,7 @@ const StudyPodDetail = () => {
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexShrink: 0 }}>
                     <button style={tab(activeTab === 'dashboard')} onClick={() => setActiveTab('dashboard')}><KanbanSquare size={18} /> Dashboard</button>
+                    <button style={tab(activeTab === 'notes')} onClick={() => setActiveTab('notes')}><StickyNote size={18} /> Notes</button>
                     <button style={tab(activeTab === 'modules')} onClick={() => setActiveTab('modules')}><BookOpen size={18} /> Modules</button>
                     <button style={tab(activeTab === 'whiteboard')} onClick={() => setActiveTab('whiteboard')}><PenTool size={18} /> Whiteboard</button>
                     <button style={tab(activeTab === 'call')} onClick={() => setActiveTab('call')}><Video size={18} /> Video Call</button>
@@ -457,6 +461,27 @@ const StudyPodDetail = () => {
                                 </div>
                             </div>
                         </>
+                    )}
+
+                    {activeTab === 'notes' && (
+                        <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '16px', padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', color: '#111827' }}><StickyNote size={20} color="#7B61FF" /> Shared Notes</h2>
+                                {!editingNotes
+                                    ? <button style={btnSm('#7B61FF')} onClick={() => { setNotesText(pod.notes || ''); setEditingNotes(true); }}><Pencil size={16} /></button>
+                                    : <div style={{ display: 'flex', gap: '6px' }}>
+                                        <button style={btnSm('#7B61FF')} onClick={async () => { try { await updateNotes(podId, notesText); setEditingNotes(false); loadData(); } catch(e) { console.error(e); } }}><Save size={16} /></button>
+                                        <button style={btnSm('#EF4444')} onClick={() => setEditingNotes(false)}><X size={16} /></button>
+                                      </div>
+                                }
+                            </div>
+                            {editingNotes
+                                ? <textarea value={notesText} onChange={e => setNotesText(e.target.value)} placeholder="Type shared notes for the pod here..." style={{ flex: 1, minHeight: '300px', width: '100%', padding: '16px', border: '1.5px solid #7B61FF', borderRadius: '12px', resize: 'vertical', outline: 'none', fontFamily: 'inherit', fontSize: '15px', boxSizing: 'border-box', background: '#FAFAFA', lineHeight: '1.6' }} />
+                                : <div style={{ flex: 1, minHeight: '300px', padding: '16px', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px', overflowY: 'auto' }}>
+                                    <p style={{ margin: 0, color: '#4B5563', lineHeight: '1.6', whiteSpace: 'pre-wrap', fontSize: '15px' }}>{pod.notes || <em style={{ color: '#9CA3AF' }}>No notes taken yet. Click the pencil icon to add some!</em>}</p>
+                                  </div>
+                            }
+                        </div>
                     )}
 
                     {activeTab === 'modules' && <LearningModulesPanel varkStyle={varkStyle} />}
