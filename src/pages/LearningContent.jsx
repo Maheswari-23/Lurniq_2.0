@@ -341,8 +341,6 @@ const LearningContent = () => {
                 />
             )}
 
-            )}
-
             {/* Floating AI Chatbot */}
             <AIChatbot varkStyle={activeModality} persona={activePersona} />
         </div>
