@@ -1677,11 +1677,11 @@ def start_pod_battle(pod_id):
         except Exception as e:
             print("Failed to generate battle questions:", e)
             questions = [
-                {"q": f"What is a key concept in {topic}?", "options": ["Abstraction", "Photosynthesis", "Gravity", "Combustion"], "answer": 0},
-                {"q": "Which of these is generally fastest?", "options": ["O(n^2)", "O(n)", "O(1)", "O(n log n)"], "answer": 2},
-                {"q": "What data structure uses LIFO?", "options": ["Queue", "Tree", "Graph", "Stack"], "answer": 3},
-                {"q": "Which data structure uses FIFO?", "options": ["Stack", "Array", "Queue", "Heap"], "answer": 2},
-                {"q": f"Why is {topic} important?", "options": ["It is not", "Efficiency", "Color", "Weight"], "answer": 1}
+                {"q": "What does API stand for?", "options": ["Application Programming Interface", "Applied Processing Integration", "Automated Program Interactive", "Advanced Processing Interface"], "answer": 0},
+                {"q": "Which HTTP method is typically used to retrieve data?", "options": ["POST", "PUT", "DELETE", "GET"], "answer": 3},
+                {"q": "What does REST stand for?", "options": ["Representational State Transfer", "Responsive Execution Standard Protocol", "Remote Execution System Transfer", "Real-time State Transition"], "answer": 0},
+                {"q": "Which format is most commonly used for REST API responses?", "options": ["XML", "JSON", "CSV", "HTML"], "answer": 1},
+                {"q": "What HTTP status code indicates a successful request?", "options": ["404", "500", "200", "403"], "answer": 2}
             ]
 
     battle_state = {
