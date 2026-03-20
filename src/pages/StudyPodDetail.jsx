@@ -689,7 +689,7 @@ const PodConceptLens = ({ podId }) => {
             if (link) formData.append('link', link);
             if (file) formData.append('file', file);
 
-            const res = await fetch(`${API_BASE_URL}/generate_concept_lens`, {
+            const res = await fetch(`${API_BASE_URL}/api/concept-lens`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${localStorage.getItem('lurniq_token')}` },
                 body: formData
