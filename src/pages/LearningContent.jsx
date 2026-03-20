@@ -7,7 +7,7 @@ import '../styles/phase2.css';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { useStreak, getBadge } from '../hooks/useStreak';
-import { Search, X, BookOpen, Flame, Trophy, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Search, X, BookOpen, Flame, Trophy, CheckCircle2, ChevronDown, Sparkles } from 'lucide-react';
 
 // ── Built-in topic catalogue ─────────────────────────────────────────
 const BUILTIN_TOPICS = [
