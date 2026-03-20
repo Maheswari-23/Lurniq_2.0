@@ -34,7 +34,7 @@ const StudyPodsDashboard = () => {
         e.preventDefault();
         setError(null);
         try {
-            const res = await createPod(name, goals, "Master API integration basics");
+            const res = await createPod(name, goals, "");
             navigate(`/pods/${res.pod_id}`);
         } catch (e) { setError(e.message); }
     };

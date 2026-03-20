@@ -1417,11 +1417,7 @@ def create_pod():
         "members": [user_id],
         "goals": goals,
         "weekly_challenge": weekly_challenge,
-        "daily_tasks": [
-            {"id": "t1", "task": "Complete 1 micro-capsule"},
-            {"id": "t2", "task": "Share 1 insight in chat"},
-            {"id": "t3", "task": "Review weekly challenge"}
-        ],
+        "daily_tasks": [],
         "task_completions": {}, # mapping task_id -> list of user_ids who completed it
         "chat_history": [],
         "created_at": datetime.now(timezone.utc)

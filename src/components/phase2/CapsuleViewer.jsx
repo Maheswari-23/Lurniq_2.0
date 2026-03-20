@@ -695,12 +695,28 @@ function buildFallbackCapsule(topic, modality) {
         const label = custom.label || topic;
         let content;
         if (modality === 'Visual') {
+            const sents = answer.split('. ').filter(s => s.trim().length > 5).slice(0, 4);
+            const safeLabel = label.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 20);
+            
+            let mermaidStr = `graph TD\n  Start[${safeLabel}]\n`;
+            if (sents.length > 0) {
+                const nodes = sents.map((s, i) => {
+                    const words = s.split(' ').slice(0, 4).join(' ').replace(/[^a-zA-Z0-9 ]/g, '');
+                    return `  N${i}[${words}...]`;
+                });
+                mermaidStr += nodes.join('\n') + '\n';
+                mermaidStr += `  Start --> N0\n`;
+                for (let i = 0; i < sents.length - 1; i++) {
+                    mermaidStr += `  N${i} --> N${i+1}\n`;
+                }
+            }
+
             content = {
                 learning_objective: `Understand "${label}" through a visual breakdown.`,
                 analogy: answer.slice(0, 200),
-                mermaid: `graph TD\n  A["${label}"] --> B["Concept Analysis"]\n  B --> C["Subcomponents"]\n  C --> D["Conclusion"]`,
-                diagram: answer.split('. ').slice(0, 5).map((s, i) => `  ${i + 1}. ${s.trim()}`),
-                steps: answer.split('. ').slice(0, 4).map(s => s.trim()).filter(Boolean),
+                mermaid: mermaidStr,
+                diagram: sents.map((s, i) => `  ${i + 1}. ${s.trim()}`),
+                steps: sents,
             };
         } else if (modality === 'Auditory') {
             content = {
@@ -717,14 +733,28 @@ function buildFallbackCapsule(topic, modality) {
                 key_terms: [{ term: label, definition: answer.slice(0, 120) }],
             };
         } else { // Kinesthetic
+            // Create a dynamic match_pairs challenge from the answer
+            const sentences = answer.split('. ').filter(s => s.trim().length > 15).slice(0, 4);
+            const pairs = sentences.map((s, i) => {
+                const words = s.split(' ');
+                const mid = Math.floor(words.length / 2);
+                return {
+                    id: `p${i}`,
+                    left: words.slice(0, mid).join(' ') + "...",
+                    right: words.slice(mid).join(' ').replace(/\.$/, '')
+                };
+            }).filter(p => p.left && p.right);
+
             content = {
                 learning_objective: `Apply understanding of "${label}" hands-on.`,
                 analogy: answer.slice(0, 180),
                 challenge: {
-                    instruction: `Based on what you just learned about "${label}", write a brief example or code snippet that demonstrates the concept.`,
-                    starter: `# Your answer about ${label}:\n# ...`,
-                    solution: `# Key points:\n${answer.split('. ').slice(0, 3).map(s => `# - ${s.trim()}`).join('\n')}`,
-                    hints: ['Review the AI explanation above.', 'Try to apply the concept to a real-world scenario.'],
+                    type: 'match_pairs',
+                    instruction: `Match the concept halves correctly to form complete sentences about "${label}".`,
+                    pairs: pairs.length >= 2 ? pairs : [
+                        { id: '1', left: `The core idea of ${label}`, right: 'is explained above' },
+                        { id: '2', left: 'This concept helps us', right: 'build better applications' }
+                    ]
                 },
             };
         }
