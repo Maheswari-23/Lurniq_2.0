@@ -800,31 +800,38 @@ const CapsuleViewer = ({ topic, topicLabel, modality: initialModality, varkProbs
         setPhase('loading');
         setCapsule(null);
 
+        // Built-in topic IDs — always use static FALLBACK_TEMPLATES, no backend call
+        const BUILTIN_IDS = ['variables', 'operators', 'conditionals', 'loops', 'functions', 'arrays', 'recursion', 'oop', 'datastructures', 'complexity'];
+        const isBuiltin = BUILTIN_IDS.includes(topic);
+
         // Step 1: Show local template immediately
         const local = buildFallbackCapsule(topic, activeModality);
         setCapsule(local);
         setPhase('content');
         contentStartTime.current = Date.now();
 
-        // Step 2: Try Flask in background
-        (async () => {
-            try {
-                const data = await generateCapsule(topic, activeModality, 1, persona);
-                const RICH_FIELDS = ['diagram', 'narrative', 'challenge', 'definition', 'syntax', 'color_code'];
-                const hasRichContent = data?.content &&
-                    RICH_FIELDS.some(f => data.content[f] && (
-                        Array.isArray(data.content[f])
-                            ? data.content[f].length > 0
-                            : Object.keys(data.content[f]).length > 0
-                    ));
-                if (!cancelled && hasRichContent) setCapsule(data);
-            } catch {
-                // Ignore — already showing local template
-            }
-        })();
+        // Step 2: For custom topics only — try Flask in background to enrich content
+        if (!isBuiltin) {
+            (async () => {
+                try {
+                    const data = await generateCapsule(topic, activeModality, 1, persona);
+                    const RICH_FIELDS = ['diagram', 'narrative', 'challenge', 'definition', 'syntax', 'color_code'];
+                    const hasRichContent = data?.content &&
+                        RICH_FIELDS.some(f => data.content[f] && (
+                            Array.isArray(data.content[f])
+                                ? data.content[f].length > 0
+                                : Object.keys(data.content[f]).length > 0
+                        ));
+                    if (!cancelled && hasRichContent) setCapsule(data);
+                } catch {
+                    // Ignore — already showing local template
+                }
+            })();
+        }
 
         return () => { cancelled = true; };
     }, [topic, activeModality, persona]);
+
 
     // Lock body scroll
     useEffect(() => {
