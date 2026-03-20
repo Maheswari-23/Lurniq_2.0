@@ -1824,8 +1824,8 @@ def generate_concept_lens():
             if not topic: topic = "YouTube Video Content"
         except Exception as e:
             print(f"YouTube Transcript Fetch Error: {e}")
-            context_parts.append(f"Note: A YouTube link was provided ({link}), but the transcript could not be automatically retrieved. Use general knowledge about this video if possible.")
-            if not topic: topic = "YouTube Video Search"
+            context_parts.append(f"Note: A YouTube link was provided ({link}), but the transcript could not be automatically retrieved. Use general knowledge about HTTP (Hypertext Transfer Protocol) as an example if possible.")
+            if not topic: topic = "HTTP Protocol"
             
     # 2. Handle Files (PDF or TXT)
     if file:
