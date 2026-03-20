@@ -25,6 +25,33 @@ const ConceptLens = () => {
     const [loading, setLoading] = useState(false);
     const [lensData, setLensData] = useState(null);
     const [error, setError] = useState(null);
+    const [addedToHub, setAddedToHub] = useState(false);
+
+    const addToHub = () => {
+        if (!topic || !lensData) return;
+        const newTopic = {
+            id: `custom_${topic.trim().toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`,
+            label: topic.trim(),
+            description: lensData.explanation.slice(0, 120) + '...',
+            difficulty: 4,
+            category: 'My Topics',
+            chatbotAnswer: lensData.explanation,
+        };
+        // Use window hook if Learning Hub is open, else save to localStorage directly
+        if (typeof window.__addCustomTopic === 'function') {
+            window.__addCustomTopic(newTopic);
+        } else {
+            try {
+                const existing = JSON.parse(localStorage.getItem('lurniq_custom_topics') || '[]');
+                if (!existing.find(t => t.id === newTopic.id)) {
+                    localStorage.setItem('lurniq_custom_topics', JSON.stringify([...existing, newTopic]));
+                }
+            } catch { /* ignore */ }
+        }
+        setAddedToHub(true);
+        setTimeout(() => setAddedToHub(false), 3000);
+    };
+
 
     const handleSearch = async (e) => {
         e.preventDefault();
@@ -184,26 +211,18 @@ const ConceptLens = () => {
                                 <Bot size={24} color="#7B61FF" /> AI Explanation
                             </h2>
                             <button 
-                                onClick={() => {
-                                    if (window.__addCustomTopic) {
-                                        window.__addCustomTopic({
-                                            id: `custom_${Date.now()}`,
-                                            label: topic,
-                                            description: lensData.explanation.slice(0, 100) + '...',
-                                            difficulty: 4,
-                                            category: 'My Topics'
-                                        });
-                                    }
-                                }}
+                                onClick={addToHub}
                                 style={{
                                     display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', 
-                                    background: '#F5F3FF', color: '#7B61FF', border: '1px solid #C4B5FD', 
+                                    background: addedToHub ? '#ECFDF5' : '#F5F3FF', 
+                                    color: addedToHub ? '#059669' : '#7B61FF', 
+                                    border: `1px solid ${addedToHub ? '#6EE7B7' : '#C4B5FD'}`, 
                                     borderRadius: '99px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
                                 }}
-                                onMouseEnter={e => e.currentTarget.style.background = '#EDE9FE'}
-                                onMouseLeave={e => e.currentTarget.style.background = '#F5F3FF'}
+                                onMouseEnter={e => !addedToHub && (e.currentTarget.style.background = '#EDE9FE')}
+                                onMouseLeave={e => !addedToHub && (e.currentTarget.style.background = '#F5F3FF')}
                             >
-                                <Plus size={16} /> Add to Learning Hub
+                                <Plus size={16} /> {addedToHub ? '✓ Added to Hub!' : 'Add to Learning Hub'}
                             </button>
                         </div>
                         <div style={{ color: '#374151', lineHeight: '1.8', fontSize: '16px' }}>
