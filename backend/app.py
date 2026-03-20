@@ -15,13 +15,48 @@ from groq import Groq
 from youtube_transcript_api import YouTubeTranscriptApi
 import fitz  # PyMuPDF
 
-# Initialize Groq client
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-try:
-    groq_client = Groq(api_key=GROQ_API_KEY)
-except Exception as e:
-    print("Failed to initialize Groq client:", e)
-    groq_client = None
+# Initialize Groq clients (handle rate limits with multiple keys)
+class GroqClientWrapper:
+    def __init__(self, keys):
+        from groq import Groq
+        self.clients = [Groq(api_key=k) for k in keys if k]
+        self.current_idx = 0
+
+    @property
+    def chat(self):
+        class ChatWrapper:
+            def __init__(self, wrapper):
+                self.wrapper = wrapper
+            @property
+            def completions(self):
+                class CompletionsWrapper:
+                    def __init__(self, wrapper):
+                        self.wrapper = wrapper
+                    def create(self, **kwargs):
+                        if not self.wrapper.clients:
+                            raise Exception("No Groq clients available.")
+                        last_error = None
+                        start_idx = self.wrapper.current_idx
+                        for i in range(len(self.wrapper.clients)):
+                            idx = (start_idx + i) % len(self.wrapper.clients)
+                            try:
+                                return self.wrapper.clients[idx].chat.completions.create(**kwargs)
+                            except Exception as e:
+                                print(f"Groq API call failed on key index {idx}, trying next... Error: {e}")
+                                last_error = e
+                                self.wrapper.current_idx = (idx + 1) % len(self.wrapper.clients)
+                        raise last_error
+                return CompletionsWrapper(self.wrapper)
+        return ChatWrapper(self)
+
+keys_to_try = [
+    os.getenv("GROQ_API_KEY"),
+    os.getenv("GROQ_API_KEY_2"),
+    os.getenv("GROQ_API_KEY_3")
+]
+valid_keys = [k for k in keys_to_try if k and len(k) > 10]
+
+groq_client = GroqClientWrapper(valid_keys) if valid_keys else None
 
 # ── Auth / DB dependencies ─────────────────────────────────────────
 from dotenv import load_dotenv
