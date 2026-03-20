@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Bot, Search, Loader2, Sparkles, SlidersHorizontal, Eye, Headphones, BookOpen, Activity, ArrowRight } from 'lucide-react';
+import { Bot, Search, Loader2, Sparkles, SlidersHorizontal, Eye, Headphones, BookOpen, Activity, ArrowRight, Plus } from 'lucide-react';
 import MicroCapsule from '../components/phase2/MicroCapsule';
 import API_BASE_URL from '../config.js';
 
@@ -141,9 +141,33 @@ const ConceptLens = () => {
                     
                     {/* Explanation Context */}
                     <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '24px', padding: '32px', marginBottom: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                        <h2 style={{ margin: '0 0 16px', fontSize: '20px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Bot size={24} color="#7B61FF" /> AI Explanation
-                        </h2>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Bot size={24} color="#7B61FF" /> AI Explanation
+                            </h2>
+                            <button 
+                                onClick={() => {
+                                    if (window.__addCustomTopic) {
+                                        window.__addCustomTopic({
+                                            id: `custom_${Date.now()}`,
+                                            label: topic,
+                                            description: lensData.explanation.slice(0, 100) + '...',
+                                            difficulty: 4,
+                                            category: 'My Topics'
+                                        });
+                                    }
+                                }}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', 
+                                    background: '#F5F3FF', color: '#7B61FF', border: '1px solid #C4B5FD', 
+                                    borderRadius: '99px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#EDE9FE'}
+                                onMouseLeave={e => e.currentTarget.style.background = '#F5F3FF'}
+                            >
+                                <Plus size={16} /> Add to Learning Hub
+                            </button>
+                        </div>
                         <div style={{ color: '#374151', lineHeight: '1.8', fontSize: '16px' }}>
                             {lensData.explanation.split('\n').map((para, i) => (
                                 <p key={i} style={{ marginBottom: i !== lensData.explanation.split('\n').length - 1 ? '16px' : 0 }}>{para}</p>

@@ -282,12 +282,13 @@ const LearningContent = () => {
                     <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#374151', marginBottom: '6px' }}>
                         {activeCategory === 'My Topics' ? 'No custom topics yet' : 'No topics found'}
                     </h3>
-                    <p style={{ color: '#9CA3AF', fontSize: '14px' }}>
+                    <p style={{ color: '#9CA3AF', fontSize: '14px', marginBottom: '16px' }}>
                         {activeCategory === 'My Topics'
-                            ? 'Ask the AI chatbot a question and click "+ Add to Learning Hub" to create your first custom module.'
+                            ? "Can't find what you are looking for? Jump into the Concept Lens to generate an interactive module on any topic!"
                             : 'Try a different search term'}
                     </p>
-                    {search && <button onClick={() => setSearch('')} style={{ marginTop: '16px', padding: '9px 20px', background: '#F5F3FF', color: '#7B61FF', border: '1px solid #C4B5FD', borderRadius: '10px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>Clear Search</button>}
+                    {activeCategory === 'My Topics' && <button onClick={() => navigate('/lens')} style={{ padding: '9px 20px', background: 'linear-gradient(135deg, #F97AFE, #7B61FF)', color: 'white', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>Go to Concept Lens ✨</button>}
+                    {search && <button onClick={() => setSearch('')} style={{ marginTop: '16px', padding: '9px 20px', background: '#F5F3FF', color: '#7B61FF', border: '1px solid #C4B5FD', borderRadius: '10px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', marginLeft: '8px' }}>Clear Search</button>}
                 </div>
             ) : (
                 <div className="content-grid">
@@ -331,6 +332,19 @@ const LearningContent = () => {
                     onClose={handleViewerClose}
                     persona={activePersona}
                 />
+            )}
+
+            {/* Added Concept Lens Banner */}
+            {!loading && (
+                <div style={{ marginTop: '40px', marginBottom: '20px', background: 'linear-gradient(135deg, rgba(249,122,254,0.1), rgba(123,97,255,0.1))', border: '1px solid rgba(123,97,255,0.2)', borderRadius: '16px', padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+                    <div>
+                        <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 700, color: '#374151' }}>Can't find what you are looking for?</h3>
+                        <p style={{ margin: 0, color: '#6B7280', fontSize: '14px' }}>Generate a personalized, interactive learning module on absolutely any topic!</p>
+                    </div>
+                    <button onClick={() => navigate('/lens')} style={{ padding: '10px 24px', background: '#7B61FF', color: 'white', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = 0.9} onMouseLeave={e => e.currentTarget.style.opacity = 1}>
+                        Go to Concept Lens <Sparkles size={14} style={{display:'inline', marginLeft:'4px', verticalAlign:'middle'}} />
+                    </button>
+                </div>
             )}
 
             {/* Floating AI Chatbot */}

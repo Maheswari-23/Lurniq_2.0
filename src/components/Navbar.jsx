@@ -34,7 +34,7 @@ const Navbar = () => {
         {/* Desktop links */}
         <div style={s.links} className="nb-desktop">
           <NavLink to="/learning" style={({ isActive }) => activeLink(isActive)}>Learning Hub</NavLink>
-          <NavLink to="/lens" style={({ isActive }) => activeLink(isActive)}>Concept Lens ✨</NavLink>
+          <NavLink to="/lens" style={({ isActive }) => activeLink(isActive)}>Concept Lens</NavLink>
           <NavLink to="/pods" style={({ isActive }) => activeLink(isActive)}>Study Pods</NavLink>
           <NavLink to="/profile" style={({ isActive }) => activeLink(isActive)}>Profile</NavLink>
           {currentUser && (
@@ -56,7 +56,7 @@ const Navbar = () => {
       {menuOpen && (
         <div style={{ background: 'white', borderTop: '1px solid #E5E7EB', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <NavLink to="/learning" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Learning Hub</NavLink>
-          <NavLink to="/lens" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Concept Lens ✨</NavLink>
+          <NavLink to="/lens" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Concept Lens</NavLink>
           <NavLink to="/pods" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Study Pods</NavLink>
           <NavLink to="/profile" style={({ isActive }) => ({ ...activeLink(isActive), fontSize: '15px' })} onClick={() => setMenuOpen(false)}>Profile</NavLink>
           {currentUser && (
