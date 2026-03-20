@@ -688,8 +688,23 @@ const FALLBACK_TEMPLATES = {
 function buildFallbackCapsule(topic, modality, customOverride = null) {
     // Check if this is a custom chatbot-added topic
     const custom = customOverride || (() => {
-        const customTopics = (() => { try { return JSON.parse(localStorage.getItem('lurniq_custom_topics') || '[]'); } catch { return []; } })();
-        return customTopics.find(t => t.id === topic);
+        // First check the default key
+        let customTopics = (() => { try { return JSON.parse(localStorage.getItem('lurniq_custom_topics') || '[]'); } catch { return []; } })();
+        let found = customTopics.find(t => t.id === topic);
+        if (found) return found;
+
+        // If not found, check all user-specific keys (brute force lookup for fallback)
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('lurniq_custom_topics_')) {
+                    customTopics = JSON.parse(localStorage.getItem(key) || '[]');
+                    found = customTopics.find(t => t.id === topic);
+                    if (found) return found;
+                }
+            }
+        } catch { /* ignore */ }
+        return null;
     })();
 
     if (custom?.chatbotAnswer) {

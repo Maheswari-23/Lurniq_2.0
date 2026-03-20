@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Bot, Search, Loader2, Sparkles, SlidersHorizontal, Eye, Headphones, BookOpen, Activity, ArrowRight, Plus, Link as LinkIcon, FileText } from 'lucide-react';
 import MicroCapsule from '../components/phase2/MicroCapsule';
+import { useAuth } from '../context/AuthContext';
 import API_BASE_URL from '../config.js';
 
 const COMPONENT_VARKS = [
@@ -17,6 +18,7 @@ const COMPLEXITIES = [
 ];
 
 const ConceptLens = () => {
+    const { currentUser } = useAuth();
     const [topic, setTopic] = useState('');
     const [link, setLink] = useState('');
     const [file, setFile] = useState(null);
@@ -45,9 +47,11 @@ const ConceptLens = () => {
             window.__addCustomTopic(newTopic);
         } else {
             try {
-                const existing = JSON.parse(localStorage.getItem('lurniq_custom_topics') || '[]');
+                const myId = currentUser?._id || currentUser?.id;
+                const key = myId ? `lurniq_custom_topics_${myId}` : 'lurniq_custom_topics';
+                const existing = JSON.parse(localStorage.getItem(key) || '[]');
                 if (!existing.find(t => t.id === newTopic.id)) {
-                    localStorage.setItem('lurniq_custom_topics', JSON.stringify([...existing, newTopic]));
+                    localStorage.setItem(key, JSON.stringify([...existing, newTopic]));
                 }
             } catch { /* ignore */ }
         }

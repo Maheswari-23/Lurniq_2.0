@@ -23,8 +23,11 @@ const BUILTIN_TOPICS = [
     { id: 'complexity', label: 'Time & Space Complexity', description: 'Analyse algorithmic efficiency using Big-O notation and reason about trade-offs.', difficulty: 3, category: 'Advanced' },
 ];
 
-const loadCustomTopics = () => {
-    try { return JSON.parse(localStorage.getItem('lurniq_custom_topics') || '[]'); } catch { return []; }
+const loadCustomTopics = (userId) => {
+    try { 
+        const key = userId ? `lurniq_custom_topics_${userId}` : 'lurniq_custom_topics';
+        return JSON.parse(localStorage.getItem(key) || '[]'); 
+    } catch { return []; }
 };
 
 const DEFAULT_VARK = { style: 'Visual', allScores: { Visual: 0.4, Auditory: 0.2, Reading: 0.2, Kinesthetic: 0.2 } };
@@ -65,7 +68,7 @@ const LearningContent = () => {
     const [activeCategory, setActiveCategory] = useState('All');
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
-    const [customTopics, setCustomTopics] = useState(loadCustomTopics);
+    const [customTopics, setCustomTopics] = useState([]);
     const [completed, setCompleted] = useState(() => {
         try { return JSON.parse(localStorage.getItem('lurniq_completed') || '[]'); } catch { return []; }
     });
@@ -73,8 +76,12 @@ const LearningContent = () => {
     // Merged topic list
     const TOPICS = useMemo(() => [...BUILTIN_TOPICS, ...customTopics], [customTopics]);
 
-    // Load VARK profile from context / localStorage
+    // Load VARK profile and custom topics when currentUser changes
     useEffect(() => {
+        if (!currentUser) return;
+        const myId = currentUser._id || currentUser.id;
+        
+        // Load VARK
         const fromCtx = currentUser?.vark_profile;
         const fromLS = (() => { try { return JSON.parse(localStorage.getItem('varkResult')); } catch { return null; } })();
         const saved = fromCtx || fromLS || window.varkResult;
@@ -82,22 +89,30 @@ const LearningContent = () => {
             setVarkData({ style: saved.style, allScores: saved.allScores || DEFAULT_VARK.allScores });
             setActiveModality(saved.style);
         }
-        setTimeout(() => setLoading(false), 700);
+
+        // Load Custom Topics for THIS user
+        setCustomTopics(loadCustomTopics(myId));
+        
+        setLoading(false);
     }, [currentUser]);
 
     // Expose global hook so AIChatbot can push new custom topics
     useEffect(() => {
+        if (!currentUser) return;
+        const myId = currentUser._id || currentUser.id;
+        const storageKey = `lurniq_custom_topics_${myId}`;
+
         window.__addCustomTopic = (newTopic) => {
             setCustomTopics(prev => {
                 if (prev.find(t => t.id === newTopic.id)) return prev;
                 const updated = [...prev, newTopic];
-                localStorage.setItem('lurniq_custom_topics', JSON.stringify(updated));
+                localStorage.setItem(storageKey, JSON.stringify(updated));
                 return updated;
             });
             toast('✨ New module added to your Learning Hub!', 'success');
         };
         return () => { delete window.__addCustomTopic; };
-    }, [toast]);
+    }, [toast, currentUser]);
 
     const probs = varkData.allScores || DEFAULT_VARK.allScores;
     const categories = ['All', 'Foundations', 'Core Concepts', 'Advanced', 'My Topics'];
