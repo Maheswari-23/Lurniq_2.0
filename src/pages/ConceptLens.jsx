@@ -11,16 +11,16 @@ const COMPONENT_VARKS = [
 ];
 
 const COMPLEXITIES = [
-    { id: 'layman', label: 'The Layman', sub: 'Analogy Mode', desc: 'No jargon, pure real-world analogies.' },
-    { id: 'student', label: 'The Student', sub: 'Standard Mode', desc: 'Clear definitions and structured learning.' },
-    { id: 'developer', label: 'The Developer', sub: 'Technical Mode', desc: 'Code-heavy, architecture & systems focus.' }
+    { id: 'beginner', label: 'Beginner', sub: 'Analogy Mode', desc: 'No jargon, pure real-world analogies.' },
+    { id: 'intermediate', label: 'Intermediate', sub: 'Standard Mode', desc: 'Clear definitions and structured learning.' },
+    { id: 'advanced', label: 'Advanced', sub: 'Technical Mode', desc: 'Code-heavy, architecture & systems focus.' }
 ];
 
 const ConceptLens = () => {
     const [topic, setTopic] = useState('');
     const [link, setLink] = useState('');
     const [file, setFile] = useState(null);
-    const [complexity, setComplexity] = useState('student');
+    const [complexity, setComplexity] = useState('intermediate');
     const [activeTab, setActiveTab] = useState('Visual');
     const [loading, setLoading] = useState(false);
     const [lensData, setLensData] = useState(null);

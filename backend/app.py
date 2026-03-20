@@ -1832,12 +1832,12 @@ def generate_concept_lens():
     if request.is_json:
         data = request.get_json(silent=True) or {}
         topic = data.get('topic', '').strip()
-        complexity = data.get('complexity', 'student').strip().lower() # layman, student, developer
+        complexity = data.get('complexity', 'intermediate').strip().lower() # beginner, intermediate, advanced
         link = data.get('link', '').strip()
         file = None
     else:
         topic = request.form.get('topic', '').strip()
-        complexity = request.form.get('complexity', 'student').strip().lower()
+        complexity = request.form.get('complexity', 'intermediate').strip().lower()
         link = request.form.get('link', '').strip()
         file = request.files.get('file')
 
@@ -1878,12 +1878,12 @@ def generate_concept_lens():
         return jsonify({"success": False, "error": "Topic, Link, or File required"}), 400
          
     complexity_guidelines = {
-        "layman": "You are explaining to an absolute beginner with zero technical background. Use extreme simplification, heavy use of real-world analogies (like cooking, driving, plumbing, etc.), avoid ALL jargon, and keep it fun and accessible.",
-        "student": "You are explaining to a high school or early college student learning this for the first time. Use standard educational definitions, clear concepts, and practical but simple examples. Some jargon is okay if defined.",
-        "developer": "You are explaining to a senior software developer. Be highly technical, concise, use industry-standard terminology, architecture details, and assume deep prerequisite knowledge. Use code and system design concepts."
+        "beginner": "You are explaining to an absolute beginner with zero technical background. Use extreme simplification, heavy use of real-world analogies (like cooking, driving, plumbing, etc.), avoid ALL jargon, and keep it fun and accessible.",
+        "intermediate": "You are explaining to a high school or early college student learning this for the first time. Use standard educational definitions, clear concepts, and practical but simple examples. Some jargon is okay if defined.",
+        "advanced": "You are explaining to a senior software developer. Be highly technical, concise, use industry-standard terminology, architecture details, and assume deep prerequisite knowledge. Use code and system design concepts."
     }
     
-    guideline = complexity_guidelines.get(complexity, complexity_guidelines["student"])
+    guideline = complexity_guidelines.get(complexity, complexity_guidelines["intermediate"])
     
     prompt = f"""You are Lurniq's 'Concept Lens' AI.
 Topic: {topic}
@@ -1924,9 +1924,9 @@ Ensure the returned format is VALID JSON exactly matching this structure:
 }}
 
 For Kinesthetic: 
-If {complexity} is 'developer', you MUST provide a Python coding challenge instead of match_pairs. For code challenges use EXACTLY this format:
+If {complexity} is 'advanced', you MUST provide a Python coding challenge instead of match_pairs. For code challenges use EXACTLY this format:
 "challenge": {{ "instruction": "Write a python script...", "starter": "def foo():\\n    pass", "solution": "...", "expected_output": "..." }}
-If {complexity} is 'layman' or 'student', ONLY use "type": "match_pairs" with "pairs".
+If {complexity} is 'beginner' or 'intermediate', ONLY use "type": "match_pairs" with "pairs".
 For Visual: The mermaid MUST be a syntactically perfect Mermaid.js flowchart. Use ONLY alphanumeric characters for node IDs (e.g. A1, B2) and label text. Do NOT use any special characters, quotes, or brackets inside node labels.
 
 CRITICAL: Return ONLY the raw valid JSON object. Do not include markdown formatting or backticks around the JSON.
