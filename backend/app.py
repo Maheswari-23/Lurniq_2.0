@@ -1829,12 +1829,53 @@ def end_pod_battle(pod_id):
 @app.route('/api/concept-lens', methods=['POST'])
 @jwt_required()
 def generate_concept_lens():
-    data = request.get_json(silent=True) or {}
-    topic = data.get('topic', '').strip()
-    complexity = data.get('complexity', 'student').strip().lower() # layman, student, developer
+    if request.is_json:
+        data = request.get_json(silent=True) or {}
+        topic = data.get('topic', '').strip()
+        complexity = data.get('complexity', 'student').strip().lower() # layman, student, developer
+        link = data.get('link', '').strip()
+        file = None
+    else:
+        topic = request.form.get('topic', '').strip()
+        complexity = request.form.get('complexity', 'student').strip().lower()
+        link = request.form.get('link', '').strip()
+        file = request.files.get('file')
+
+    context_text = ""
     
-    if not topic:
-         return jsonify({"success": False, "error": "Topic required"}), 400
+    # 1. Handle YouTube Link
+    if link and ('youtube.com' in link or 'youtu.be' in link):
+        try:
+            if 'v=' in link:
+                video_id = link.split('v=')[1][:11]
+            else:
+                video_id = link.split('/')[-1][:11]
+            transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+            full_transcript = " ".join([t['text'] for t in transcript_list])
+            context_text = f"YouTube Transcript Content: {full_transcript[:8000]}"
+            if not topic: topic = "YouTube Video Content"
+        except Exception as e:
+            return jsonify({"success": False, "error": f"Could not parse YouTube link: {str(e)}"}), 400
+            
+    # 2. Handle PDF File
+    elif file and file.filename.endswith('.pdf'):
+        try:
+            doc = fitz.open(stream=file.read(), filetype="pdf")
+            pdf_text = ""
+            for i in range(min(5, doc.page_count)):  # parse up to 5 pages
+                pdf_text += doc[i].get_text()
+            context_text = f"Document Content: {pdf_text[:8000]}"
+            if not topic: topic = file.filename
+        except Exception as e:
+            return jsonify({"success": False, "error": f"Could not parse PDF: {str(e)}"}), 400
+            
+    # 3. Handle General Link
+    elif link:
+        if not topic: topic = link
+        context_text = f"Link provided: {link}"
+        
+    if not topic and not context_text:
+        return jsonify({"success": False, "error": "Topic, Link, or File required"}), 400
          
     complexity_guidelines = {
         "layman": "You are explaining to an absolute beginner with zero technical background. Use extreme simplification, heavy use of real-world analogies (like cooking, driving, plumbing, etc.), avoid ALL jargon, and keep it fun and accessible.",
@@ -1848,8 +1889,9 @@ def generate_concept_lens():
 Topic: {topic}
 Selected Complexity Level: {complexity.upper()}
 Guideline: {guideline}
+{f"Additional Source Content: {context_text}" if context_text else ""}
 
-Generate a comprehensive explanation and exactly 4 VARK (Visual, Auditory, Reading, Kinesthetic) interactive modules for this topic, STRICTLY adhering to the selected complexity level.
+Generate a comprehensive explanation and exactly 4 VARK (Visual, Auditory, Reading, Kinesthetic) interactive modules for this topic (heavily utilizing the Additional Source Content if provided), STRICTLY adhering to the selected complexity level.
 Ensure the returned format is VALID JSON exactly matching this structure:
 {{
   "explanation": "A 2-3 paragraph main explanation of the topic matching the {complexity} complexity.",

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Bot, Search, Loader2, Sparkles, SlidersHorizontal, Eye, Headphones, BookOpen, Activity, ArrowRight, Plus } from 'lucide-react';
+import { Bot, Search, Loader2, Sparkles, SlidersHorizontal, Eye, Headphones, BookOpen, Activity, ArrowRight, Plus, Link as LinkIcon, FileText } from 'lucide-react';
 import MicroCapsule from '../components/phase2/MicroCapsule';
 import API_BASE_URL from '../config.js';
 
@@ -18,6 +18,8 @@ const COMPLEXITIES = [
 
 const ConceptLens = () => {
     const [topic, setTopic] = useState('');
+    const [link, setLink] = useState('');
+    const [file, setFile] = useState(null);
     const [complexity, setComplexity] = useState('student');
     const [activeTab, setActiveTab] = useState('Visual');
     const [loading, setLoading] = useState(false);
@@ -26,20 +28,30 @@ const ConceptLens = () => {
 
     const handleSearch = async (e) => {
         e.preventDefault();
-        if (!topic.trim()) return;
+        if (!topic.trim() && !link.trim() && !file) return;
         
         setLoading(true);
         setError(null);
         setLensData(null);
         
         try {
+            let body, headers = { 'Authorization': `Bearer ${localStorage.getItem('lurniq_token')}` };
+            
+            if (file) {
+                body = new FormData();
+                if (topic.trim()) body.append('topic', topic.trim());
+                body.append('complexity', complexity);
+                if (link.trim()) body.append('link', link.trim());
+                body.append('file', file);
+            } else {
+                headers['Content-Type'] = 'application/json';
+                body = JSON.stringify({ topic: topic.trim(), complexity, link: link.trim() });
+            }
+
             const res = await fetch(`${API_BASE_URL}/concept-lens`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('lurniq_token')}`
-                },
-                body: JSON.stringify({ topic: topic.trim(), complexity })
+                headers,
+                body
             });
             const result = await res.json();
             if (!result.success) throw new Error(result.error || "Failed to generate concept.");
@@ -55,7 +67,7 @@ const ConceptLens = () => {
     // Re-fetch automatically when complexity changes if we already have a topic
     const handleComplexityChange = (newComp) => {
         setComplexity(newComp);
-        if (lensData && topic) {
+        if (lensData && (topic || link || file)) {
             // Re-fire search with new complexity
             const form = document.getElementById('lens-form');
             if (form) setTimeout(() => form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true })), 50);
@@ -80,19 +92,45 @@ const ConceptLens = () => {
 
             {/* Input & Controls */}
             <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '24px', padding: '24px', boxShadow: '0 12px 32px rgba(0,0,0,0.05)', marginBottom: '32px' }}>
-                <form id="lens-form" onSubmit={handleSearch} style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-                    <div style={{ position: 'relative', flex: 1 }}>
-                        <Search size={20} color="#9CA3AF" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
-                        <input 
-                            value={topic}
-                            onChange={e => setTopic(e.target.value)}
-                            placeholder="e.g. Quantum Computing, React Hooks, The Stock Market..."
-                            style={{ width: '100%', padding: '16px 16px 16px 48px', fontSize: '16px', border: '2px solid #E5E7EB', borderRadius: '16px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
-                            onFocus={e => e.target.style.borderColor = '#7B61FF'}
-                            onBlur={e => e.target.style.borderColor = '#E5E7EB'}
-                        />
+                <form id="lens-form" onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                    
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        <div style={{ position: 'relative', flex: '1 1 300px' }}>
+                            <Search size={20} color="#9CA3AF" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                            <input 
+                                value={topic}
+                                onChange={e => setTopic(e.target.value)}
+                                placeholder="Topic (e.g. APIs, Quantum Computing)..."
+                                style={{ width: '100%', padding: '16px 16px 16px 48px', fontSize: '15px', border: '2px solid #E5E7EB', borderRadius: '16px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
+                                onFocus={e => e.target.style.borderColor = '#7B61FF'}
+                                onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+                            />
+                        </div>
+                        <div style={{ position: 'relative', flex: '1 1 300px' }}>
+                            <LinkIcon size={20} color="#9CA3AF" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                            <input 
+                                value={link}
+                                onChange={e => setLink(e.target.value)}
+                                placeholder="Or link a YouTube Video..."
+                                style={{ width: '100%', padding: '16px 16px 16px 48px', fontSize: '15px', border: '2px solid #E5E7EB', borderRadius: '16px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
+                                onFocus={e => e.target.style.borderColor = '#F97AFE'}
+                                onBlur={e => e.target.style.borderColor = '#E5E7EB'}
+                            />
+                        </div>
                     </div>
-                    <button type="submit" disabled={loading || !topic} style={{ background: 'linear-gradient(135deg, #F97AFE, #7B61FF)', color: 'white', border: 'none', padding: '0 32px', borderRadius: '16px', fontSize: '16px', fontWeight: 700, cursor: (loading || !topic) ? 'not-allowed' : 'pointer', opacity: (loading || !topic) ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#F9FAFB', borderRadius: '12px', border: '1px dashed #D1D5DB' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <FileText size={20} color={file ? '#7B61FF' : '#6B7280'} />
+                            <span style={{ fontSize: '14px', color: file ? '#374151' : '#6B7280', fontWeight: file ? 600 : 400 }}>{file ? file.name : "Or upload a PDF document for context..."}</span>
+                        </div>
+                        <input type="file" id="lens-file" accept=".pdf" style={{ display: 'none' }} onChange={e => setFile(e.target.files[0])} />
+                        <label htmlFor="lens-file" style={{ padding: '8px 16px', background: 'white', border: '1px solid #E5E7EB', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', color: '#374151', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#C4B5FD'} onMouseLeave={e => e.currentTarget.style.borderColor = '#E5E7EB'}>
+                            {file ? "Change File" : "Choose File"}
+                        </label>
+                    </div>
+
+                    <button type="submit" disabled={loading || (!topic && !link && !file)} style={{ background: 'linear-gradient(135deg, #F97AFE, #7B61FF)', color: 'white', border: 'none', padding: '16px', borderRadius: '16px', fontSize: '16px', fontWeight: 700, cursor: (loading || (!topic && !link && !file)) ? 'not-allowed' : 'pointer', opacity: (loading || (!topic && !link && !file)) ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         {loading ? <Loader2 size={20} className="lucide-spin" /> : <><Bot size={20} /> Focus Lens</>}
                     </button>
                 </form>
