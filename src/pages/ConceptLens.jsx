@@ -158,15 +158,46 @@ const ConceptLens = () => {
                             <FileText size={20} color={file ? '#7B61FF' : '#6B7280'} />
                             <span style={{ fontSize: '14px', color: file ? '#374151' : '#6B7280', fontWeight: file ? 600 : 400 }}>{file ? file.name : "Or upload a PDF document for context..."}</span>
                         </div>
-                        <input type="file" id="lens-file" accept=".pdf" style={{ display: 'none' }} onChange={e => setFile(e.target.files[0])} />
+                        <input type="file" id="lens-file" accept=".pdf,.txt" style={{ display: 'none' }} onChange={e => setFile(e.target.files[0])} />
                         <label htmlFor="lens-file" style={{ padding: '8px 16px', background: 'white', border: '1px solid #E5E7EB', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', color: '#374151', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.borderColor = '#C4B5FD'} onMouseLeave={e => e.currentTarget.style.borderColor = '#E5E7EB'}>
                             {file ? "Change File" : "Choose File"}
                         </label>
                     </div>
 
-                    <button type="submit" disabled={loading || (!topic && !link && !file)} style={{ background: 'linear-gradient(135deg, #F97AFE, #7B61FF)', color: 'white', border: 'none', padding: '16px', borderRadius: '16px', fontSize: '16px', fontWeight: 700, cursor: (loading || (!topic && !link && !file)) ? 'not-allowed' : 'pointer', opacity: (loading || (!topic && !link && !file)) ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                        {loading ? <Loader2 size={20} className="lucide-spin" /> : <><Bot size={20} /> Concept Lens</>}
+                    <button 
+                        type="submit" 
+                        disabled={loading || (!topic && !link && !file)} 
+                        style={{ 
+                            background: loading ? '#9CA3AF' : 'linear-gradient(135deg, #F97AFE, #7B61FF)', 
+                            color: 'white', border: 'none', padding: '16px', borderRadius: '16px', 
+                            fontSize: '16px', fontWeight: 700, 
+                            cursor: (loading || (!topic && !link && !file)) ? 'not-allowed' : 'pointer', 
+                            opacity: (!topic && !link && !file) ? 0.7 : 1, 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                            transition: 'all 0.3s ease',
+                            boxShadow: loading ? 'none' : '0 4px 15px rgba(123, 97, 255, 0.3)',
+                            animation: loading ? 'pulse-loading 1.5s infinite ease-in-out' : 'none'
+                        }}
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 size={24} className="animate-spin" />
+                                <span>Generating Master Concept...</span>
+                            </>
+                        ) : (
+                            <>
+                                <Bot size={22} /> 
+                                <span>Activate Concept Lens</span>
+                            </>
+                        )}
                     </button>
+                    <style>{`
+                        @keyframes pulse-loading {
+                            0% { transform: scale(1); opacity: 1; }
+                            50% { transform: scale(1.02); opacity: 0.8; }
+                            100% { transform: scale(1); opacity: 1; }
+                        }
+                    `}</style>
                 </form>
 
                 {/* Complexity Slider (Toggle Buttons) */}

@@ -1793,7 +1793,7 @@ def generate_concept_lens():
         link = request.form.get('link', '').strip()
         file = request.files.get('file')
 
-    context_text = ""
+    context_parts = []
     
     # 1. Handle YouTube Link
     if link and ('youtube.com' in link or 'youtu.be' in link):
@@ -1804,30 +1804,40 @@ def generate_concept_lens():
                 video_id = link.split('/')[-1][:11]
             transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
             full_transcript = " ".join([t['text'] for t in transcript_list])
-            context_text = f"YouTube Transcript Content: {full_transcript[:8000]}"
+            context_parts.append(f"YouTube Transcript Content: {full_transcript[:6000]}")
             if not topic: topic = "YouTube Video Content"
         except Exception as e:
             print(f"YouTube Transcript Fetch Error: {e}")
-            context_text = f"Note: A YouTube link was provided ({link}), but the transcript could not be automatically retrieved. Please use your internal knowledge about this video or the general topic to generate the explanation and modules."
+            context_parts.append(f"Note: A YouTube link was provided ({link}), but the transcript could not be automatically retrieved. Use general knowledge about this video if possible.")
             if not topic: topic = "YouTube Video Search"
             
-    # 2. Handle PDF File
-    elif file and file.filename.endswith('.pdf'):
-        try:
-            doc = fitz.open(stream=file.read(), filetype="pdf")
-            pdf_text = ""
-            for i in range(min(5, doc.page_count)):  # parse up to 5 pages
-                pdf_text += doc[i].get_text()
-            context_text = f"Document Content: {pdf_text[:8000]}"
-            if not topic: topic = file.filename
-        except Exception as e:
-            return jsonify({"success": False, "error": f"Could not parse PDF: {str(e)}"}), 400
-            
-    # 3. Handle General Link
-    elif link:
+    # 2. Handle Files (PDF or TXT)
+    if file:
+        if file.filename.endswith('.pdf'):
+            try:
+                doc = fitz.open(stream=file.read(), filetype="pdf")
+                pdf_text = ""
+                for i in range(min(5, doc.page_count)):  # parse up to 5 pages
+                    pdf_text += doc[i].get_text()
+                context_parts.append(f"PDF Document Content: {pdf_text[:6000]}")
+                if not topic: topic = file.filename
+            except Exception as e:
+                print(f"PDF Parse Error: {e}")
+        elif file.filename.endswith('.txt'):
+            try:
+                txt_content = file.read().decode('utf-8', errors='ignore')
+                context_parts.append(f"Text Document Content: {txt_content[:6000]}")
+                if not topic: topic = file.filename
+            except Exception as e:
+                print(f"TXT Parse Error: {e}")
+
+    # 3. Handle General Link (if no transcript/file or as extra)
+    if link and not context_parts:
         if not topic: topic = link
-        context_text = f"Link provided: {link}"
+        context_parts.append(f"Reference Link: {link}")
         
+    context_text = "\n\n".join(context_parts)
+    
     if not topic and not context_text:
         return jsonify({"success": False, "error": "Topic, Link, or File required"}), 400
          
