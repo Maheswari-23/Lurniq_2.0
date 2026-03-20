@@ -297,7 +297,7 @@ const KinestheticContent = ({ content }) => {
 
                 {type === 'coding' && (
                     <React.Fragment>
-                        <PyodideRunner initialCode={starter} />
+                        <PyodideRunner initialCode={starter} expectedOutput={challenge.expected_output} />
 
                         <div className="mc-challenge-controls">
                             {hints.length > 0 && (

@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 
-const PyodideRunner = ({ initialCode }) => {
+const PyodideRunner = ({ initialCode, expectedOutput }) => {
     const [code, setCode] = useState(initialCode || '');
     const [output, setOutput] = useState('');
     const [isLoaded, setIsLoaded] = useState(false);
     const [isRunning, setIsRunning] = useState(false);
+    const [isCorrect, setIsCorrect] = useState(null);
     const pyodideRef = useRef(null);
+    const outputRef = useRef('');
 
     // Sync input code when external initialCode changes (like clicking a different topic)
     useEffect(() => { setCode(initialCode || ''); }, [initialCode]);
@@ -21,9 +23,11 @@ const PyodideRunner = ({ initialCode }) => {
                 if (mounted) setOutput('Loading Python environment...\n');
                 pyodideRef.current = await window.loadPyodide({
                     stdout: (msg) => {
+                        outputRef.current += msg + '\n';
                         if (mounted) setOutput(prev => prev + msg + '\n');
                     },
                     stderr: (msg) => {
+                        outputRef.current += 'Error: ' + msg + '\n';
                         if (mounted) setOutput(prev => prev + 'Error: ' + msg + '\n');
                     }
                 });
@@ -43,12 +47,20 @@ const PyodideRunner = ({ initialCode }) => {
     const handleRun = async () => {
         if (!pyodideRef.current || !isLoaded) return;
         setIsRunning(true);
+        setIsCorrect(null);
         setOutput(prev => prev + '--- Running ---\n');
+        outputRef.current = '';
         
         try {
             await pyodideRef.current.runPythonAsync(code);
+            if (expectedOutput) {
+                const cleanOutput = outputRef.current.trim();
+                const cleanExpected = expectedOutput.trim();
+                setIsCorrect(cleanOutput === cleanExpected);
+            }
         } catch (err) {
             setOutput(prev => prev + err.message + '\n');
+            if (expectedOutput) setIsCorrect(false);
         } finally {
             setIsRunning(false);
         }
@@ -78,7 +90,8 @@ const PyodideRunner = ({ initialCode }) => {
                 />
             </div>
             
-            <div style={{ display: 'flex', padding: '12px', background: '#f9fafb', borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', alignItems: 'center' }}>
+            <div style={{ display: 'flex', padding: '12px', background: '#f9fafb', borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                 <button 
                     onClick={handleRun}
                     disabled={!isLoaded || isRunning}
@@ -97,6 +110,12 @@ const PyodideRunner = ({ initialCode }) => {
                     {isRunning ? 'Running...' : '▶ Run Code'}
                 </button>
                 {!isLoaded && <span style={{ marginLeft: '12px', color: '#6B7280', fontSize: '13px', fontWeight: '500' }}>Starting Python container...</span>}
+                </div>
+                {isCorrect !== null && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, fontSize: '14px', color: isCorrect ? '#059669' : '#DC2626' }}>
+                        {isCorrect ? '✅ Output Matches Expected!' : '❌ Output Incorrect — Try Again'}
+                    </div>
+                )}
             </div>
 
             <div style={{ background: '#0D1117', color: '#10B981', padding: '12px', fontFamily: '"Fira Code", monospace', fontSize: '14px', minHeight: '100px', maxHeight: '250px', overflowY: 'auto' }}>

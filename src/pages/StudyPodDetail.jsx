@@ -5,13 +5,14 @@ import { useAuth } from '../context/AuthContext';
 import {
     Loader2, Send, CheckCircle2, Circle, ArrowLeft, Target, Trophy,
     Video, KanbanSquare, Bot, Plus, Pencil, Trash2, Check, X, Save,
-    MessageCircle, BookOpen, ChevronDown, ChevronUp, Copy
+    MessageCircle, BookOpen, ChevronDown, ChevronUp, Copy, PenTool
 } from 'lucide-react';
 import PodVideoCall from '../components/phase2/PodVideoCall';
 import AIChatbot from '../components/AIChatbot';
 import CapsuleViewer from '../components/phase2/CapsuleViewer';
 import ContentCard from '../components/phase2/ContentCard';
 import PodBattle from '../components/phase2/PodBattle';
+import PodWhiteboard from '../components/phase2/PodWhiteboard';
 import API_BASE_URL from '../config.js';
 import '../styles/phase2.css';
 
@@ -344,11 +345,11 @@ const StudyPodDetail = () => {
                     
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
                         {(pod.active_battle && pod.active_battle.state === 'active') ? (
-                            <button onClick={() => setShowBattle(true)} style={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)', animation: 'pulse 2s infinite' }}>
+                            <button onClick={() => setShowBattle(true)} style={{ background: 'linear-gradient(135deg, #F97AFE, #7B61FF)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(123, 97, 255, 0.4)', animation: 'pulse 2s infinite' }}>
                                 <Trophy size={18} /> Join Battle
                             </button>
                         ) : (
-                            <button onClick={handleStartBattle} disabled={startingBattle} style={{ background: 'linear-gradient(135deg, #FF4B2B, #FF416C)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', opacity: startingBattle ? 0.7 : 1 }}>
+                            <button onClick={handleStartBattle} disabled={startingBattle} style={{ background: 'linear-gradient(135deg, #F97AFE, #7B61FF)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', opacity: startingBattle ? 0.7 : 1, boxShadow: '0 4px 12px rgba(123, 97, 255, 0.2)' }}>
                                 {startingBattle ? <Loader2 size={18} className="lucide-spin" /> : <Trophy size={18} />} Start Battle
                             </button>
                         )}
@@ -369,6 +370,7 @@ const StudyPodDetail = () => {
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexShrink: 0 }}>
                     <button style={tab(activeTab === 'dashboard')} onClick={() => setActiveTab('dashboard')}><KanbanSquare size={18} /> Dashboard</button>
                     <button style={tab(activeTab === 'modules')} onClick={() => setActiveTab('modules')}><BookOpen size={18} /> Modules</button>
+                    <button style={tab(activeTab === 'whiteboard')} onClick={() => setActiveTab('whiteboard')}><PenTool size={18} /> Whiteboard</button>
                     <button style={tab(activeTab === 'call')} onClick={() => setActiveTab('call')}><Video size={18} /> Video Call</button>
                     <button style={tab(activeTab === 'learn')} onClick={() => setActiveTab('learn')}><Bot size={18} /> AI Tutor</button>
                 </div>
@@ -458,6 +460,7 @@ const StudyPodDetail = () => {
                     )}
 
                     {activeTab === 'modules' && <LearningModulesPanel varkStyle={varkStyle} />}
+                    {activeTab === 'whiteboard' && <PodWhiteboard podCode={pod.pod_code} />}
                     {activeTab === 'call' && <PodVideoCall podCode={pod.pod_code} userName={currentUser.name} />}
                     {activeTab === 'learn' && <div style={{ flex: 1, display: 'flex' }}><AIChatbot inline={true} /></div>}
                 </div>
