@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import {
     Loader2, Send, CheckCircle2, Circle, ArrowLeft, Target, Trophy,
     Video, KanbanSquare, Bot, Plus, Pencil, Trash2, Check, X, Save,
-    MessageCircle, BookOpen, ChevronDown, ChevronUp, Copy, PenTool, StickyNote
+    MessageCircle, BookOpen, ChevronDown, ChevronUp, Copy, PenTool, StickyNote, Download
 } from 'lucide-react';
 import PodVideoCall from '../components/phase2/PodVideoCall';
 import AIChatbot from '../components/AIChatbot';
@@ -234,12 +234,18 @@ const StudyPodDetail = () => {
     const chatRef = useRef(null);
     const myId = currentUser?._id || currentUser?.id;
 
+    const isEditingGoalsRef = useRef(false);
+    const isEditingNotesRef = useRef(false);
+    
+    useEffect(() => { isEditingGoalsRef.current = editingGoals; }, [editingGoals]);
+    useEffect(() => { isEditingNotesRef.current = editingNotes; }, [editingNotes]);
+
     const loadData = async () => {
         try {
             const [podRes, chatRes] = await Promise.all([getPodDetails(podId), getChatHistory(podId)]);
             setPod(podRes.pod);
-            if (!editingGoals) setGoalsText(podRes.pod.goals || '');
-            if (!editingNotes) setNotesText(podRes.pod.notes || '');
+            if (!isEditingGoalsRef.current) setGoalsText(podRes.pod.goals || '');
+            if (!isEditingNotesRef.current) setNotesText(podRes.pod.notes || '');
             // Annotate messages with isMe flag
             setChat((chatRes.chat_history || []).map(m => ({ ...m, isMe: m.sender_id === myId })));
         } catch (e) { console.error(e); }
@@ -468,19 +474,36 @@ const StudyPodDetail = () => {
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                                 <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', color: '#111827' }}><StickyNote size={20} color="#7B61FF" /> Shared Notes</h2>
                                 {!editingNotes
-                                    ? <button style={btnSm('#7B61FF')} onClick={() => { setNotesText(pod.notes || ''); setEditingNotes(true); }}><Pencil size={16} /></button>
+                                    ? <div style={{ display: 'flex', gap: '8px' }}>
+                                          <button style={btnSm('#10B981')} onClick={() => {
+                                              const element = document.createElement("a");
+                                              const file = new Blob([pod.notes || 'No notes taken yet.'], {type: 'text/plain'});
+                                              element.href = URL.createObjectURL(file);
+                                              element.download = `${pod.name ? pod.name.replace(/\s+/g, '_') : 'study_pod'}_notes.txt`;
+                                              document.body.appendChild(element);
+                                              element.click();
+                                          }} title="Download Notes">
+                                              <Download size={16} />
+                                          </button>
+                                          <button style={btnSm('#7B61FF')} onClick={() => { setNotesText(pod.notes || ''); setEditingNotes(true); }}><Pencil size={16} /></button>
+                                      </div>
                                     : <div style={{ display: 'flex', gap: '6px' }}>
                                         <button style={btnSm('#7B61FF')} onClick={async () => { try { await updateNotes(podId, notesText); setEditingNotes(false); loadData(); } catch(e) { console.error(e); } }}><Save size={16} /></button>
                                         <button style={btnSm('#EF4444')} onClick={() => setEditingNotes(false)}><X size={16} /></button>
                                       </div>
                                 }
                             </div>
-                            {editingNotes
-                                ? <textarea value={notesText} onChange={e => setNotesText(e.target.value)} placeholder="Type shared notes for the pod here..." style={{ flex: 1, minHeight: '300px', width: '100%', padding: '16px', border: '1.5px solid #7B61FF', borderRadius: '12px', resize: 'vertical', outline: 'none', fontFamily: 'inherit', fontSize: '15px', boxSizing: 'border-box', background: '#FAFAFA', lineHeight: '1.6' }} />
-                                : <div style={{ flex: 1, minHeight: '300px', padding: '16px', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px', overflowY: 'auto' }}>
-                                    <p style={{ margin: 0, color: '#4B5563', lineHeight: '1.6', whiteSpace: 'pre-wrap', fontSize: '15px' }}>{pod.notes || <em style={{ color: '#9CA3AF' }}>No notes taken yet. Click the pencil icon to add some!</em>}</p>
-                                  </div>
-                            }
+                            
+                            <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ position: 'absolute', top: 0, left: '32px', bottom: 0, width: '2px', background: '#FCA5A5', zIndex: 1, pointerEvents: 'none' }} />
+                                
+                                {editingNotes
+                                    ? <textarea value={notesText} onChange={e => setNotesText(e.target.value)} placeholder="Type shared notes for the pod here..." style={{ flex: 1, minHeight: '400px', width: '100%', padding: '24px 24px 24px 48px', border: '1px solid #FDE68A', borderRadius: '4px', resize: 'vertical', outline: 'none', fontFamily: "'Courier New', Courier, monospace", fontSize: '15px', boxSizing: 'border-box', background: '#FFFBEB', lineHeight: '28px', backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, #FDE68A 27px, #FDE68A 28px)', color: '#374151', boxShadow: 'inset 0 0 10px rgba(0,0,0,0.02), 4px 4px 15px rgba(0,0,0,0.05)' }} />
+                                    : <div style={{ flex: 1, minHeight: '400px', padding: '24px 24px 24px 48px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '4px', overflowY: 'auto', fontFamily: "'Courier New', Courier, monospace", fontSize: '15px', lineHeight: '28px', backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, #FDE68A 27px, #FDE68A 28px)', color: '#374151', boxShadow: 'inset 0 0 10px rgba(0,0,0,0.02), 4px 4px 15px rgba(0,0,0,0.05)' }}>
+                                        <p style={{ margin: 0, whiteSpace: 'pre-wrap', position: 'relative', zIndex: 2 }}>{pod.notes || <em style={{ color: '#9CA3AF' }}>No notes taken yet. Click the pencil icon to start typing!</em>}</p>
+                                      </div>
+                                }
+                            </div>
                         </div>
                     )}
 
