@@ -470,40 +470,156 @@ const StudyPodDetail = () => {
                     )}
 
                     {activeTab === 'notes' && (
-                        <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '16px', padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', color: '#111827' }}><StickyNote size={20} color="#7B61FF" /> Shared Notes</h2>
-                                {!editingNotes
-                                    ? <div style={{ display: 'flex', gap: '8px' }}>
-                                          <button style={btnSm('#10B981')} onClick={() => {
-                                              const element = document.createElement("a");
-                                              const file = new Blob([pod.notes || 'No notes taken yet.'], {type: 'text/plain'});
-                                              element.href = URL.createObjectURL(file);
-                                              element.download = `${pod.name ? pod.name.replace(/\s+/g, '_') : 'study_pod'}_notes.txt`;
-                                              document.body.appendChild(element);
-                                              element.click();
-                                          }} title="Download Notes">
-                                              <Download size={16} />
-                                          </button>
-                                          <button style={btnSm('#7B61FF')} onClick={() => { setNotesText(pod.notes || ''); setEditingNotes(true); }}><Pencil size={16} /></button>
-                                      </div>
-                                    : <div style={{ display: 'flex', gap: '6px' }}>
-                                        <button style={btnSm('#7B61FF')} onClick={async () => { try { await updateNotes(podId, notesText); setEditingNotes(false); loadData(); } catch(e) { console.error(e); } }}><Save size={16} /></button>
-                                        <button style={btnSm('#EF4444')} onClick={() => setEditingNotes(false)}><X size={16} /></button>
-                                      </div>
-                                }
+                        <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '16px', padding: '24px', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', color: '#111827' }}>
+                                    <StickyNote size={20} color="#7B61FF" /> Pod Notes Repository
+                                </h2>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <button 
+                                        onClick={() => {
+                                            const printWindow = window.open('', '_blank');
+                                            const notesHtml = pod.notes.map(n => `
+                                                <div style="margin-bottom: 30px; border-bottom: 1px solid #EEE; padding-bottom: 15px;">
+                                                    <div style="font-size: 12px; color: #666;">${n.sender_name} • ${new Date(n.timestamp).toLocaleString()}</div>
+                                                    <div style="font-family: 'Courier New', monospace; white-space: pre-wrap; margin-top: 10px;">${n.content}</div>
+                                                </div>
+                                            `).join('');
+                                            printWindow.document.write(`
+                                                <html>
+                                                    <head><title>${pod.name} - Study Notes</title></head>
+                                                    <body style="font-family: sans-serif; padding: 40px; color: #333;">
+                                                        <h1 style="color: #7B61FF; border-bottom: 2px solid #7B61FF;">${pod.name} Study Notes</h1>
+                                                        ${notesHtml}
+                                                    </body>
+                                                </html>
+                                            `);
+                                            printWindow.document.close();
+                                            printWindow.print();
+                                        }}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: '#F5F3FF', border: '1px solid #7B61FF', borderRadius: '8px', color: '#7B61FF', fontWeight: 600, cursor: 'pointer', fontSize: '13px' }}
+                                    >
+                                        <Download size={16} /> Download PDF
+                                    </button>
+                                    {!editingNotes && (
+                                        <button 
+                                            onClick={() => { setNotesText(''); setEditingNotes(true); }}
+                                            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: '#7B61FF', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '13px' }}
+                                        >
+                                            <Plus size={16} /> New Note
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             
-                            <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                <div style={{ position: 'absolute', top: 0, left: '32px', bottom: 0, width: '2px', background: '#FCA5A5', zIndex: 1, pointerEvents: 'none' }} />
-                                
-                                {editingNotes
-                                    ? <textarea value={notesText} onChange={e => setNotesText(e.target.value)} placeholder="Type shared notes for the pod here..." style={{ flex: 1, minHeight: '400px', width: '100%', padding: '24px 24px 24px 48px', border: '1px solid #FDE68A', borderRadius: '4px', resize: 'vertical', outline: 'none', fontFamily: "'Courier New', Courier, monospace", fontSize: '15px', boxSizing: 'border-box', background: '#FFFBEB', lineHeight: '28px', backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, #FDE68A 27px, #FDE68A 28px)', color: '#374151', boxShadow: 'inset 0 0 10px rgba(0,0,0,0.02), 4px 4px 15px rgba(0,0,0,0.05)' }} />
-                                    : <div style={{ flex: 1, minHeight: '400px', padding: '24px 24px 24px 48px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '4px', overflowY: 'auto', fontFamily: "'Courier New', Courier, monospace", fontSize: '15px', lineHeight: '28px', backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, #FDE68A 27px, #FDE68A 28px)', color: '#374151', boxShadow: 'inset 0 0 10px rgba(0,0,0,0.02), 4px 4px 15px rgba(0,0,0,0.05)' }}>
-                                        <p style={{ margin: 0, whiteSpace: 'pre-wrap', position: 'relative', zIndex: 2 }}>{pod.notes || <em style={{ color: '#9CA3AF' }}>No notes taken yet. Click the pencil icon to start typing!</em>}</p>
-                                      </div>
-                                }
-                            </div>
+                            {editingNotes ? (
+                                <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <div style={{ display: 'flex', gap: '8px', paddingBottom: '12px', borderBottom: '1px solid #E5E7EB' }}>
+                                        <button 
+                                            onClick={() => {
+                                                const txt = notesText;
+                                                setNotesText(txt + ' **bold text** ');
+                                            }}
+                                            style={{ padding: '6px 12px', background: 'white', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
+                                        >B</button>
+                                        <button 
+                                            onClick={() => {
+                                                const txt = notesText;
+                                                setNotesText(txt + '\n- bullet point\n');
+                                            }}
+                                            style={{ padding: '6px 12px', background: 'white', border: '1px solid #D1D5DB', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}
+                                        >• List</button>
+                                        <span style={{ fontSize: '11px', color: '#6B7280', alignSelf: 'center', marginLeft: 'auto' }}>Markdown supported: **bold**, - list</span>
+                                    </div>
+                                    <textarea 
+                                        value={notesText} 
+                                        onChange={e => setNotesText(e.target.value)} 
+                                        placeholder="Add a new note to the pod..." 
+                                        style={{ width: '100%', minHeight: '200px', padding: '15px', border: '1.5px solid #E5E7EB', borderRadius: '8px', fontSize: '14px', outline: 'none', fontFamily: 'inherit', resize: 'vertical' }}
+                                    />
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                                        <button onClick={() => setEditingNotes(false)} style={{ padding: '8px 20px', background: '#F3F4F6', color: '#4B5563', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                                        <button 
+                                            onClick={async () => {
+                                                if (!notesText.trim()) return;
+                                                const newNote = {
+                                                    id: Date.now().toString(),
+                                                    content: notesText,
+                                                    sender_name: currentUser.name,
+                                                    timestamp: new Date().toISOString()
+                                                };
+                                                const newList = [newNote, ...(Array.isArray(pod.notes) ? pod.notes : [])];
+                                                try { 
+                                                    await updateNotes(podId, newList); 
+                                                    setEditingNotes(false); 
+                                                    loadData(); 
+                                                } catch(e) { console.error(e); }
+                                            }}
+                                            style={{ padding: '8px 20px', background: '#7B61FF', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+                                        >Save Note</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    {(Array.isArray(pod.notes) ? pod.notes : []).length === 0 ? (
+                                        <div style={{ textAlign: 'center', padding: '40px', background: '#F9FAFB', borderRadius: '12px', border: '1px dashed #D1D5DB' }}>
+                                            <StickyNote size={40} color="#D1D5DB" style={{ margin: '0 auto 12px' }} />
+                                            <p style={{ color: '#6B7280', margin: 0 }}>No notes yet. Start documenting your journey!</p>
+                                        </div>
+                                    ) : (
+                                        pod.notes.map((n, idx) => (
+                                            <div key={n.id || idx} style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px', transition: 'all 0.2s', position: 'relative' }} onMouseOver={e => e.currentTarget.style.borderColor = '#7B61FF'} onMouseOut={e => e.currentTarget.style.borderColor = '#E5E7EB'}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <div style={{ width: '32px', height: '32px', background: '#F5F3FF', color: '#7B61FF', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '12px' }}>
+                                                            {n.sender_name?.charAt(0) || 'U'}
+                                                        </div>
+                                                        <div>
+                                                            <div style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>{n.sender_name}</div>
+                                                            <div style={{ fontSize: '11px', color: '#9CA3AF' }}>{n.timestamp ? new Date(n.timestamp).toLocaleString() : 'Legacy'}</div>
+                                                        </div>
+                                                    </div>
+                                                    <button 
+                                                        onClick={async () => {
+                                                            if (!window.confirm('Delete this note?')) return;
+                                                            const newList = pod.notes.filter((_, i) => i !== idx);
+                                                            try { await updateNotes(podId, newList); loadData(); } catch(e) { console.error(e); }
+                                                        }}
+                                                        style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', padding: '4px' }}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                                <div style={{ fontSize: '14px', lineHeight: '1.6', color: '#374151', whiteSpace: 'pre-wrap' }}>
+                                                    {/* Simple Bold/Bullet simulation for display */}
+                                                    {n.content.split('\n').map((line, i) => {
+                                                        let rendered = line;
+                                                        // bold
+                                                        const boldRegex = /\*\*(.*?)\*\*/g;
+                                                        const parts = [];
+                                                        let lastIdx = 0;
+                                                        let match;
+                                                        while ((match = boldRegex.exec(line)) !== null) {
+                                                            parts.push(line.substring(lastIdx, match.index));
+                                                            parts.push(<strong key={match.index}>{match[1]}</strong>);
+                                                            lastIdx = boldRegex.lastIndex;
+                                                        }
+                                                        parts.push(line.substring(lastIdx));
+                                                        
+                                                        const isBullet = line.trim().startsWith('- ');
+                                                        return (
+                                                            <div key={i} style={{ marginBottom: '4px', paddingLeft: isBullet ? '12px' : 0 }}>
+                                                                {isBullet ? '• ' : ''}
+                                                                {parts.length > 1 ? parts : line.replace(/^- /, '')}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            )}
                         </div>
                     )}
 

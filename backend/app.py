@@ -1424,6 +1424,16 @@ def get_pod_details(pod_id):
         if u:
             members[m_id] = u.get("name", "Unknown")
     
+    # Migration for legacy notes
+    notes_raw = pod.get("notes", "")
+    if isinstance(notes_raw, str):
+        if notes_raw.strip():
+            notes_list = [{"id": "legacy", "content": notes_raw, "sender_name": "Legacy", "timestamp": pod.get("created_at", datetime.now(timezone.utc)).isoformat()}]
+        else:
+            notes_list = []
+    else:
+        notes_list = notes_raw
+
     pod_data = {
         "id": str(pod["_id"]),
         "name": pod.get("name"),
@@ -1433,7 +1443,7 @@ def get_pod_details(pod_id):
         "daily_tasks": pod.get("daily_tasks", []),
         "task_completions": pod.get("task_completions", {}),
         "weekly_challenge": pod.get("weekly_challenge", ""),
-        "notes": pod.get("notes", ""),
+        "notes": notes_list,
         "active_battle": pod.get("active_battle")
     }
     return jsonify({"success": True, "pod": pod_data}), 200
@@ -1598,13 +1608,19 @@ def update_pod_notes(pod_id):
     user_id = get_jwt_identity()
     db = get_db()
     data = request.get_json(silent=True) or {}
-    notes = data.get('notes', '').strip()
+    notes = data.get('notes', [])
+    
+    # If frontend sends a string (legacy/single-save), convert to list
+    if isinstance(notes, str):
+        notes = [{"id": "latest", "content": notes, "sender_name": "User", "timestamp": datetime.now(timezone.utc).isoformat()}]
+
     try:
         pod = db.pods.find_one({"_id": ObjectId(pod_id)})
     except:
         return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
     if not pod or user_id not in pod.get("members", []):
         return jsonify({"success": False, "error": "Access denied"}), 403
+        
     db.pods.update_one({"_id": pod["_id"]}, {"$set": {"notes": notes}})
     return jsonify({"success": True}), 200
 
