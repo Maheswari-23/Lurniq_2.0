@@ -5,8 +5,10 @@ import { useAuth } from '../context/AuthContext';
 import {
     Loader2, Send, CheckCircle2, Circle, ArrowLeft, Target, Trophy,
     Video, KanbanSquare, Bot, Plus, Pencil, Trash2, Check, X, Save,
-    MessageCircle, BookOpen, ChevronDown, ChevronUp, Copy, PenTool, StickyNote, Download
+    MessageCircle, BookOpen, ChevronDown, ChevronUp, Copy, PenTool, StickyNote, Download,
+    Sparkles, SlidersHorizontal, Eye, Headphones, Activity, Link as LinkIcon, FileText
 } from 'lucide-react';
+import MicroCapsule from '../components/phase2/MicroCapsule';
 import PodVideoCall from '../components/phase2/PodVideoCall';
 import AIChatbot from '../components/AIChatbot';
 import CapsuleViewer from '../components/phase2/CapsuleViewer';
@@ -382,6 +384,7 @@ const StudyPodDetail = () => {
                     <button style={tab(activeTab === 'modules')} onClick={() => setActiveTab('modules')}><BookOpen size={18} /> Modules</button>
                     <button style={tab(activeTab === 'whiteboard')} onClick={() => setActiveTab('whiteboard')}><PenTool size={18} /> Whiteboard</button>
                     <button style={tab(activeTab === 'call')} onClick={() => setActiveTab('call')}><Video size={18} /> Video Call</button>
+                    <button style={tab(activeTab === 'lens')} onClick={() => setActiveTab('lens')}><Sparkles size={18} /> Concept Lens</button>
                     <button style={tab(activeTab === 'learn')} onClick={() => setActiveTab('learn')}><Bot size={18} /> AI Tutor</button>
                 </div>
 
@@ -626,6 +629,11 @@ const StudyPodDetail = () => {
                     {activeTab === 'modules' && <LearningModulesPanel varkStyle={varkStyle} />}
                     {activeTab === 'whiteboard' && <PodWhiteboard podCode={pod.pod_code} />}
                     {activeTab === 'call' && <PodVideoCall podCode={pod.pod_code} userName={currentUser.name} />}
+                    {activeTab === 'lens' && (
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <PodConceptLens podId={podId} />
+                        </div>
+                    )}
                     {activeTab === 'learn' && <div style={{ flex: 1, display: 'flex' }}><AIChatbot inline={true} /></div>}
                 </div>
             </div>
@@ -635,6 +643,158 @@ const StudyPodDetail = () => {
             
             {showBattle && (
                 <PodBattle podId={podId} currentUser={currentUser} onClose={() => setShowBattle(false)} />
+            )}
+        </div>
+    );
+};
+
+const COMPONENT_VARKS = [
+    { id: 'Visual', icon: Eye, label: 'Watch It', color: '#7B61FF' },
+    { id: 'Auditory', icon: Headphones, label: 'Hear It', color: '#F97AFE' },
+    { id: 'Reading', icon: BookOpen, label: 'Read It', color: '#4C1D95' },
+    { id: 'Kinesthetic', icon: Activity, label: 'Do It', color: '#F97316' }
+];
+
+const LENS_COMPLEXITIES = [
+    { id: 'beginner', label: 'Beginner', sub: 'Analogy Mode', desc: 'No jargon, pure real-world analogies.' },
+    { id: 'intermediate', label: 'Intermediate', sub: 'Standard Mode', desc: 'Clear definitions and structured learning.' },
+    { id: 'advanced', label: 'Advanced', sub: 'Technical Mode', desc: 'Code-heavy, architecture & systems focus.' }
+];
+
+const PodConceptLens = ({ podId }) => {
+    const { currentUser } = useAuth();
+    const [topic, setTopic] = useState('');
+    const [link, setLink] = useState('');
+    const [file, setFile] = useState(null);
+    const [complexity, setComplexity] = useState('intermediate');
+    const [loading, setLoading] = useState(false);
+    const [lensData, setLensData] = useState(null);
+    const [error, setError] = useState(null);
+    const [activeTab, setActiveTab] = useState('Visual');
+    const [addedToHub, setAddedToHub] = useState(false);
+
+    const handleSearch = async (e) => {
+        if (e) e.preventDefault();
+        const t = topic.trim();
+        if (!t && !link && !file) return;
+
+        setLoading(true);
+        setLensData(null);
+        setError(null);
+
+        try {
+            const formData = new FormData();
+            formData.append('topic', t);
+            formData.append('complexity', complexity);
+            if (link) formData.append('link', link);
+            if (file) formData.append('file', file);
+
+            const res = await fetch(`${API_BASE_URL}/generate_concept_lens`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${localStorage.getItem('lurniq_token')}` },
+                body: formData
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to generate lens');
+            
+            setLensData(data.data);
+            setActiveTab('Visual');
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const addToHub = () => {
+        if (!topic || !lensData) return;
+        const newTopic = {
+            id: `custom_${topic.trim().toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`,
+            label: topic.trim(),
+            description: lensData.explanation.slice(0, 120) + '...',
+            difficulty: 4,
+            category: 'My Topics',
+            chatbotAnswer: lensData.explanation,
+            varkContent: lensData.vark,
+            complexity: complexity,
+            originalTopic: topic.trim()
+        };
+        if (typeof window.__addCustomTopic === 'function') {
+            window.__addCustomTopic(newTopic);
+        } else {
+            const myId = currentUser?._id || currentUser?.id;
+            const key = myId ? `lurniq_custom_topics_${myId}` : 'lurniq_custom_topics';
+            const existing = JSON.parse(localStorage.getItem(key) || '[]');
+            localStorage.setItem(key, JSON.stringify([...existing, newTopic]));
+        }
+        setAddedToHub(true);
+        setTimeout(() => setAddedToHub(false), 3000);
+    };
+
+    return (
+        <div style={{ padding: '20px', background: '#F9FAFB', borderRadius: '24px', flex: 1 }}>
+            <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '24px', padding: '32px', marginBottom: '24px' }}>
+                <h2 style={{ margin: '0 0 8px', fontSize: '24px', fontWeight: 800, color: '#111827' }}>Learning New Things 🚀</h2>
+                <p style={{ margin: '0 0 24px', color: '#6B7280', fontSize: '15px' }}>Generate master concepts from topics, YouTube links, or documents.</p>
+                
+                <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 1fr', gap: '16px' }}>
+                        <div style={{ position: 'relative' }}>
+                            <Search style={{ position: 'absolute', left: '14px', top: '14px' }} size={18} color="#9CA3AF" />
+                            <input value={topic} onChange={e => setTopic(e.target.value)} placeholder="Topic (e.g. Quantum Computing)" style={{ width: '100%', padding: '12px 12px 12px 42px', border: '1.5px solid #E5E7EB', borderRadius: '14px', fontSize: '15px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }} />
+                        </div>
+                        <div style={{ position: 'relative' }}>
+                            <LinkIcon style={{ position: 'absolute', left: '14px', top: '14px' }} size={18} color="#9CA3AF" />
+                            <input value={link} onChange={e => setLink(e.target.value)} placeholder="YouTube Link (Optional)" style={{ width: '100%', padding: '12px 12px 12px 42px', border: '1.5px solid #E5E7EB', borderRadius: '14px', fontSize: '15px', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }} />
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                        <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', border: '1.5px dashed #C4B5FD', borderRadius: '14px', cursor: 'pointer', background: '#F5F3FF', color: '#7B61FF', fontWeight: 600, fontSize: '14px' }}>
+                            <FileText size={18} /> {file ? file.name : 'Upload PDF/TXT'}
+                            <input type="file" onChange={e => setFile(e.target.files[0])} accept=".pdf,.txt" style={{ display: 'none' }} />
+                        </label>
+                        <div style={{ display: 'flex', background: '#F3F4F6', padding: '4px', borderRadius: '12px', gap: '4px' }}>
+                            {LENS_COMPLEXITIES.map(c => (
+                                <button key={c.id} type="button" onClick={() => setComplexity(c.id)} style={{ padding: '8px 16px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 700, transition: 'all 0.2s', background: complexity === c.id ? 'white' : 'transparent', color: complexity === c.id ? '#7B61FF' : '#6B7280', boxShadow: complexity === c.id ? '0 2px 4px rgba(0,0,0,0.05)' : 'none' }}>{c.label}</button>
+                            ))}
+                        </div>
+                        <button type="submit" disabled={loading || (!topic && !link && !file)} style={{ padding: '12px 32px', background: 'linear-gradient(135deg,#F97AFE,#7B61FF)', color: 'white', border: 'none', borderRadius: '14px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 15px rgba(123,97,255,0.3)', minWidth: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (loading || (!topic && !link && !file)) ? 0.7 : 1 }}>
+                            {loading ? <><Loader2 size={18} className="spin" /> Generating...</> : <><Sparkles size={18} /> Generate Lens</>}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {error && <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '16px', borderRadius: '12px', marginBottom: '24px', textAlign: 'center' }}>{error}</div>}
+
+            {lensData && !loading && (
+                <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
+                    <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } } .spin { animation: spin 1s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                    <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '24px', padding: '32px', marginBottom: '24px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}><Bot size={24} color="#7B61FF" /> AI Explanation</h2>
+                            <button onClick={addToHub} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: addedToHub ? '#ECFDF5' : '#F5F3FF', color: addedToHub ? '#059669' : '#7B61FF', border: `1px solid ${addedToHub ? '#6EE7B7' : '#C4B5FD'}`, borderRadius: '99px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s' }}>
+                                <Plus size={16} /> {addedToHub ? '✓ Added to Hub!' : 'Add to Learning Hub'}
+                            </button>
+                        </div>
+                        <div style={{ color: '#374151', lineHeight: '1.8', fontSize: '16px' }}>{lensData.explanation.split('\n').map((para, i) => <p key={i} style={{ marginBottom: '12px' }}>{para}</p>)}</div>
+                    </div>
+
+                    <div>
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto' }}>
+                            {COMPONENT_VARKS.map(v => (
+                                <button key={v.id} onClick={() => setActiveTab(v.id)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '99px', border: 'none', fontWeight: 700, fontSize: '14px', cursor: 'pointer', background: activeTab === v.id ? v.color : '#F3F4F6', color: activeTab === v.id ? 'white' : '#4B5563' }}>
+                                    <v.icon size={18} /> {v.label}
+                                </button>
+                            ))}
+                        </div>
+                        <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '24px', padding: '32px', minHeight: '400px' }}>
+                            <MicroCapsule modality={activeTab} learning_objective={`Master ${topic}`} analogy={lensData.explanation.slice(0, 150)} content={lensData.vark[activeTab]} />
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
