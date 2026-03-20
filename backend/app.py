@@ -1478,6 +1478,47 @@ def get_pod_details(pod_id):
         return jsonify({"success": False, "error": "Pod not found or access denied"}), 404
 
     # Fetch member names
+    members = {}
+    for m_id in pod.get("members", []):
+        u = db.users.find_one({"_id": ObjectId(m_id)})
+        if u:
+            members[m_id] = u.get("name")
+    
+    pod_data = {
+        "id": str(pod["_id"]),
+        "name": pod.get("name"),
+        "goals": pod.get("goals", ""),
+        "pod_code": pod.get("pod_code"),
+        "members": members,
+        "daily_tasks": pod.get("daily_tasks", []),
+        "task_completions": pod.get("task_completions", {}),
+        "weekly_challenge": pod.get("weekly_challenge", ""),
+        "notes": pod.get("notes", ""),
+        "active_battle": pod.get("active_battle")
+    }
+    return jsonify({"success": True, "pod": pod_data}), 200
+
+
+@app.route('/api/pods/<pod_id>', methods=['DELETE'])
+@jwt_required()
+def delete_pod(pod_id):
+    user_id = get_jwt_identity()
+    db = get_db()
+    
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+
+    if not pod:
+        return jsonify({"success": False, "error": "Pod not found"}), 404
+
+    # Authorization: Only members can delete (or we could restrict to creator, but currently no creator field)
+    if user_id not in pod.get("members", []):
+        return jsonify({"success": False, "error": "Access denied"}), 403
+
+    db.pods.delete_one({"_id": ObjectId(pod_id)})
+    return jsonify({"success": True, "message": "Pod deleted successfully"}), 200
     members_map = {}
     valid_object_ids = [ObjectId(m) for m in pod.get("members", []) if len(m) == 24]
     

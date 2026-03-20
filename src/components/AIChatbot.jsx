@@ -21,7 +21,7 @@ function slugify(text) {
 const AIChatbot = ({ varkStyle = 'Visual', persona = 'Default', inline = false }) => {
     const [open, setOpen] = useState(inline ? true : false);
     const [messages, setMessages] = useState([
-        { role: 'bot', text: `Hi! I'm your Lurniq AI tutor 👋 Ask me anything — I'll explain it in a **${varkStyle}** way just for you.` }
+        { role: 'bot', text: `Hi! I'm your Lurniq AI Assistant 👋 How can I help you today? I can explain concepts, solve doubts, or help you navigate Lurniq.` }
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
