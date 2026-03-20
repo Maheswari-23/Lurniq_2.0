@@ -102,6 +102,16 @@ export const updateGoals = async (pod_id, goals) => {
     return res.json();
 };
 
+export const updateWeeklyChallenge = async (pod_id, challenge) => {
+    const res = await fetch(`${API_BASE_URL}/pods/${pod_id}/challenge`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ challenge })
+    });
+    if (!res.ok) throw new Error("Error updating challenge");
+    return res.json();
+};
+
 export const updateNotes = async (pod_id, notes) => {
     const res = await fetch(`${API_BASE_URL}/pods/${pod_id}/notes`, {
         method: 'PUT',

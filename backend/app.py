@@ -1602,6 +1602,23 @@ def update_pod_goals(pod_id):
     return jsonify({"success": True}), 200
 
 
+@app.route('/api/pods/<pod_id>/challenge', methods=['PUT'])
+@jwt_required()
+def update_pod_challenge(pod_id):
+    user_id = get_jwt_identity()
+    db = get_db()
+    data = request.get_json(silent=True) or {}
+    challenge = data.get('challenge', '').strip()
+    try:
+        pod = db.pods.find_one({"_id": ObjectId(pod_id)})
+    except:
+        return jsonify({"success": False, "error": "Invalid Pod ID"}), 400
+    if not pod or user_id not in pod.get("members", []):
+        return jsonify({"success": False, "error": "Access denied"}), 403
+    db.pods.update_one({"_id": pod["_id"]}, {"$set": {"weekly_challenge": challenge}})
+    return jsonify({"success": True}), 200
+
+
 @app.route('/api/pods/<pod_id>/notes', methods=['PUT'])
 @jwt_required()
 def update_pod_notes(pod_id):

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getPodDetails, getChatHistory, sendChatMessage, toggleTask, addTask, editTask, deleteTask, updateGoals, updateNotes } from '../services/podService';
+import { getPodDetails, getChatHistory, sendChatMessage, toggleTask, addTask, editTask, deleteTask, updateGoals, updateNotes, updateWeeklyChallenge } from '../services/podService';
 import { useAuth } from '../context/AuthContext';
 import {
     Loader2, Send, CheckCircle2, Circle, ArrowLeft, Target, Trophy,
@@ -227,6 +227,8 @@ const StudyPodDetail = () => {
     const [goalsText, setGoalsText] = useState('');
     const [editingNotes, setEditingNotes] = useState(false);
     const [notesText, setNotesText] = useState('');
+    const [editingChallenge, setEditingChallenge] = useState(false);
+    const [challengeText, setChallengeText] = useState('');
     
     // Boss Battle State
     const [showBattle, setShowBattle] = useState(false);
@@ -238,9 +240,11 @@ const StudyPodDetail = () => {
 
     const isEditingGoalsRef = useRef(false);
     const isEditingNotesRef = useRef(false);
+    const isEditingChallengeRef = useRef(false);
     
     useEffect(() => { isEditingGoalsRef.current = editingGoals; }, [editingGoals]);
     useEffect(() => { isEditingNotesRef.current = editingNotes; }, [editingNotes]);
+    useEffect(() => { isEditingChallengeRef.current = editingChallenge; }, [editingChallenge]);
 
     const loadData = async () => {
         try {
@@ -248,6 +252,7 @@ const StudyPodDetail = () => {
             setPod(podRes.pod);
             if (!isEditingGoalsRef.current) setGoalsText(podRes.pod.goals || '');
             if (!isEditingNotesRef.current) setNotesText(podRes.pod.notes || '');
+            if (!isEditingChallengeRef.current) setChallengeText(podRes.pod.weekly_challenge || '');
             // Annotate messages with isMe flag
             setChat((chatRes.chat_history || []).map(m => ({ ...m, isMe: m.sender_id === myId })));
         } catch (e) { console.error(e); }
@@ -314,6 +319,10 @@ const StudyPodDetail = () => {
 
     const handleSaveGoals = async () => {
         try { await updateGoals(podId, goalsText); setEditingGoals(false); loadData(); } catch (e) { console.error(e); }
+    };
+
+    const handleSaveChallenge = async () => {
+        try { await updateWeeklyChallenge(podId, challengeText); setEditingChallenge(false); loadData(); } catch (e) { console.error(e); }
     };
 
     if (loading && !pod) return <div style={{ padding: '100px', textAlign: 'center' }}><Loader2 size={32} className="animate-spin" style={{ margin: '0 auto' }} /></div>;
@@ -464,9 +473,21 @@ const StudyPodDetail = () => {
 
                             {/* Weekly Challenge */}
                             <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: '16px', padding: '24px' }}>
-                                <h2 style={{ margin: '0 0 12px', fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', color: '#111827' }}><Trophy size={20} color="#F59E0B" /> Weekly Challenge</h2>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                                    <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', color: '#111827' }}><Trophy size={20} color="#F59E0B" /> Weekly Challenge</h2>
+                                    {!editingChallenge
+                                        ? <button style={btnSm('#F59E0B')} onClick={() => { setChallengeText(pod.weekly_challenge || ''); setEditingChallenge(true); }}><Pencil size={16} /></button>
+                                        : <div style={{ display: 'flex', gap: '6px' }}>
+                                            <button style={btnSm('#F59E0B')} onClick={handleSaveChallenge}><Save size={16} /></button>
+                                            <button style={btnSm('#EF4444')} onClick={() => setEditingChallenge(false)}><X size={16} /></button>
+                                          </div>
+                                    }
+                                </div>
                                 <div style={{ background: '#FFFBEB', border: '1px solid #FEF3C7', padding: '16px', borderRadius: '12px' }}>
-                                    <p style={{ margin: 0, color: '#92400E', fontWeight: 500 }}>{pod.weekly_challenge || "No active challenge this week."}</p>
+                                    {editingChallenge
+                                        ? <textarea value={challengeText} onChange={e => setChallengeText(e.target.value)} placeholder="Set this week's challenge..." style={{ width: '100%', minHeight: '60px', padding: '10px', border: '1.5px solid #F59E0B', borderRadius: '8px', resize: 'vertical', outline: 'none', fontFamily: 'inherit', fontSize: '15px', boxSizing: 'border-box', background: 'white' }} />
+                                        : <p style={{ margin: 0, color: '#92400E', fontWeight: 500, lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{pod.weekly_challenge || <em style={{ color: '#D97706' }}>No active challenge this week. Click edit to set one!</em>}</p>
+                                    }
                                 </div>
                             </div>
                         </>
