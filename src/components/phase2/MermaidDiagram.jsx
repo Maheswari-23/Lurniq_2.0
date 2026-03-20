@@ -15,7 +15,7 @@ mermaid.initialize({
     securityLevel: 'loose',
 });
 
-const MermaidDiagram = ({ diagramCode }) => {
+const MermaidDiagram = ({ diagramCode, fallback }) => {
     const containerRef = useRef(null);
     const [svgContent, setSvgContent] = useState('');
     const [error, setError] = useState('');
@@ -52,6 +52,7 @@ const MermaidDiagram = ({ diagramCode }) => {
     }, [diagramCode]);
 
     if (error) {
+        if (fallback) return fallback;
         return <div className="mc-mermaid-error" style={{ color: '#EF4444', padding: '10px' }}>{error}</div>;
     }
 

@@ -26,9 +26,19 @@ const VisualContent = ({ content }) => {
             {mermaid ? (
                 <div className="mc-mermaid-wrap">
                     <h3 className="mc-section-title">Visual Layout</h3>
-                    <MermaidDiagram diagramCode={mermaid} />
+                    <MermaidDiagram 
+                        diagramCode={mermaid} 
+                        fallback={
+                            diagram && diagram.length > 0 ? (
+                                <div className="mc-diagram-wrap">
+                                    <h3 className="mc-section-title">Flow Diagram</h3>
+                                    <pre className="mc-ascii-diagram">{diagram.join('\n')}</pre>
+                                </div>
+                            ) : null
+                        }
+                    />
                 </div>
-            ) : diagram.length > 0 && (
+            ) : diagram && diagram.length > 0 && (
                 <div className="mc-diagram-wrap">
                     <h3 className="mc-section-title">Flow Diagram</h3>
                     <pre className="mc-ascii-diagram">{diagram.join('\n')}</pre>
@@ -354,16 +364,21 @@ const KinestheticContent = ({ content }) => {
 };
 
 // ── Dispatcher ────────────────────────────────────────────────────────────────
-const MicroCapsule = ({ topic, modality, content }) => {
+const MicroCapsule = ({ topic, modality, content, learning_objective, analogy }) => {
+    // Merge Concept Lens props into content if missing so inner views find them
+    const mergedContent = { ...content };
+    if (learning_objective && !mergedContent.learning_objective) mergedContent.learning_objective = learning_objective;
+    if (analogy && !mergedContent.analogy) mergedContent.analogy = analogy;
+
     const map = {
-        Visual: <VisualContent content={content} topic={topic} />,
-        Auditory: <AuditoryContent content={content} />,
-        Reading: <ReadWriteContent content={content} />,
-        Kinesthetic: <KinestheticContent content={content} />,
+        Visual: <VisualContent content={mergedContent} topic={topic} />,
+        Auditory: <AuditoryContent content={mergedContent} />,
+        Reading: <ReadWriteContent content={mergedContent} />,
+        Kinesthetic: <KinestheticContent content={mergedContent} />,
     };
     return (
         <div className={`micro-capsule micro-capsule--${modality.toLowerCase()}`}>
-            {map[modality] ?? <ReadWriteContent content={content} />}
+            {map[modality] ?? <ReadWriteContent content={mergedContent} />}
         </div>
     );
 };
