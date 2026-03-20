@@ -17,6 +17,7 @@ import LearningContent from './pages/LearningContent';
 import StudyPodsDashboard from './pages/StudyPodsDashboard';
 import StudyPodDetail from './pages/StudyPodDetail';
 import Profile from './pages/Profile';
+import ConceptLens from './pages/ConceptLens';
 import Navbar from './components/Navbar';
 
 const MainLayout = ({ children }) => (
@@ -57,6 +58,7 @@ function App() {
             <Route path="/learning" element={<ProtectedRoute><MainLayout><LearningContent /></MainLayout></ProtectedRoute>} />
             <Route path="/pods" element={<ProtectedRoute><MainLayout><StudyPodsDashboard /></MainLayout></ProtectedRoute>} />
             <Route path="/pods/:podId" element={<ProtectedRoute><MainLayout><StudyPodDetail /></MainLayout></ProtectedRoute>} />
+            <Route path="/lens" element={<ProtectedRoute><MainLayout><ConceptLens /></MainLayout></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

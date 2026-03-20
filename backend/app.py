@@ -1824,6 +1824,93 @@ def end_pod_battle(pod_id):
     return jsonify({"success": True}), 200
 
 
+# ── Concept Lens (Analogy Engine) ────────────────────────────────────────────
+
+@app.route('/api/concept-lens', methods=['POST'])
+@jwt_required()
+def generate_concept_lens():
+    data = request.get_json(silent=True) or {}
+    topic = data.get('topic', '').strip()
+    complexity = data.get('complexity', 'student').strip().lower() # layman, student, developer
+    
+    if not topic:
+         return jsonify({"success": False, "error": "Topic required"}), 400
+         
+    complexity_guidelines = {
+        "layman": "You are explaining to an absolute beginner with zero technical background. Use extreme simplification, heavy use of real-world analogies (like cooking, driving, plumbing, etc.), avoid ALL jargon, and keep it fun and accessible.",
+        "student": "You are explaining to a high school or early college student learning this for the first time. Use standard educational definitions, clear concepts, and practical but simple examples. Some jargon is okay if defined.",
+        "developer": "You are explaining to a senior software developer. Be highly technical, concise, use industry-standard terminology, architecture details, and assume deep prerequisite knowledge. Use code and system design concepts."
+    }
+    
+    guideline = complexity_guidelines.get(complexity, complexity_guidelines["student"])
+    
+    prompt = f"""You are Lurniq's 'Concept Lens' AI.
+Topic: {topic}
+Selected Complexity Level: {complexity.upper()}
+Guideline: {guideline}
+
+Generate a comprehensive explanation and exactly 4 VARK (Visual, Auditory, Reading, Kinesthetic) interactive modules for this topic, STRICTLY adhering to the selected complexity level.
+Ensure the returned format is VALID JSON exactly matching this structure:
+{{
+  "explanation": "A 2-3 paragraph main explanation of the topic matching the {complexity} complexity.",
+  "vark": {{
+    "Visual": {{
+      "mermaid": "graph TD\\n  A[Start] --> B[End]",
+      "diagram": ["Step 1: ...", "Step 2: ..."],
+      "steps": ["Step 1", "Step 2"]
+    }},
+    "Auditory": {{
+      "analogy": "A short script for a podcast or explainer video about this topic at {complexity} level.",
+      "narrative": ["Dialogue line 1", "Dialogue line 2"],
+      "mnemonic": "A clever mnemonic or memory trick"
+    }},
+    "Reading": {{
+      "definition": "A formal or summary definition",
+      "notes": ["Bullet point 1", "Bullet point 2"],
+      "key_terms": [{{"term": "Term1", "definition": "Def1"}}]
+    }},
+    "Kinesthetic": {{
+      "challenge": {{
+        "instruction": "Interactive task instructions",
+        "type": "match_pairs",
+        "pairs": [
+          {{"id": "1", "left": "Concept", "right": "Definition"}}
+        ]
+      }}
+    }}
+  }}
+}}
+
+For Kinesthetic: 
+If {complexity} is 'developer', you MUST provide a Python coding challenge instead of match_pairs. For code challenges use EXACTLY this format:
+"challenge": {{ "instruction": "Write a python script...", "starter": "def foo():\\n    pass", "solution": "...", "expected_output": "..." }}
+If {complexity} is 'layman' or 'student', ONLY use "type": "match_pairs" with "pairs".
+For Visual: The mermaid MUST be a syntactically perfect Mermaid.js flowchart. Use ONLY alphanumeric characters for node IDs (e.g. A1, B2) and label text. Do NOT use any special characters, quotes, or brackets inside node labels.
+
+CRITICAL: Return ONLY the raw valid JSON object. Do not include markdown formatting or backticks around the JSON.
+"""
+
+    messages = [
+        {"role": "system", "content": "You are an expert AI tutor API that strictly outputs JSON."},
+        {"role": "user", "content": prompt}
+    ]
+    
+    try:
+        response = groq_client.chat.completions.create(
+            messages=messages,
+            model="llama-3.3-70b-versatile",
+            temperature=0.7,
+            max_tokens=2500,
+            response_format={"type": "json_object"}
+        )
+        content_str = response.choices[0].message.content
+        result = json.loads(content_str)
+        return jsonify({"success": True, "data": result})
+    except Exception as e:
+        print("Error generating concept lens:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 if __name__ == '__main__':
 
     print("\n" + "="*60)
