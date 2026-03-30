@@ -323,88 +323,20 @@ def engineer_features(df):
     return df_featured
 
 # ============================================
-# 3. DEEP LEARNING MODEL
+# 3. XGBOOST PREDICTOR
 # ============================================
 
-def create_deep_model(input_dim, num_classes=4):
-    """Create deep neural network (requires TensorFlow)"""
-    if not TF_AVAILABLE:
-        raise RuntimeError("TensorFlow is not installed; cannot build deep model.")
-    inputs = keras.Input(shape=(input_dim,))
-
-    
-    x = layers.Dense(256, kernel_regularizer=regularizers.l2(0.001))(inputs)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation('relu')(x)
-    x = layers.Dropout(0.4)(x)
-    
-    x = layers.Dense(128, kernel_regularizer=regularizers.l2(0.001))(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation('relu')(x)
-    x = layers.Dropout(0.3)(x)
-    
-    x = layers.Dense(64, kernel_regularizer=regularizers.l2(0.001))(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation('relu')(x)
-    x = layers.Dropout(0.2)(x)
-    
-    x = layers.Dense(32)(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation('relu')(x)
-    
-    outputs = layers.Dense(num_classes, activation='softmax')(x)
-    
-    model = keras.Model(inputs=inputs, outputs=outputs)
-    model.compile(
-        optimizer=keras.optimizers.Adam(learning_rate=0.001),
-        loss='sparse_categorical_crossentropy',
-        metrics=['accuracy']
-    )
-    
-    return model
-
-# ============================================
-# 4. ENSEMBLE MODEL
-# ============================================
-
-def create_ensemble_model():
-    """Create ensemble of ML models"""
-    rf = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=20,
-        min_samples_split=5,
-        random_state=42,
-        n_jobs=-1
-    )
-    
-    gb = GradientBoostingClassifier(
-        n_estimators=200,
-        learning_rate=0.1,
-        max_depth=7,
-        random_state=42
-    )
-    
-    ensemble = VotingClassifier(
-        estimators=[('rf', rf), ('gb', gb)],
-        voting='soft'
-    )
-    
-    return ensemble
-
-# ============================================
-# 5. HYBRID PREDICTOR
-# ============================================
+import xgboost as xgb
 
 class HybridVARKPredictor:
     def __init__(self):
         self.scaler = StandardScaler()
         self.label_encoder = LabelEncoder()
-        self.dl_model = None
-        self.ensemble_model = None
+        self.xgb_model = None
         self.feature_columns = None
         
     def fit(self, X, y, epochs=100, batch_size=32, validation_split=0.2):
-        """Train both models"""
+        """Train XGBoost model"""
         y_encoded = self.label_encoder.fit_transform(y)
         X_scaled = self.scaler.fit_transform(X)
         self.feature_columns = X.columns.tolist()
@@ -414,59 +346,36 @@ class HybridVARKPredictor:
             random_state=42, stratify=y_encoded
         )
         
-        print("Training Deep Learning Model...")
-        self.dl_model = create_deep_model(X.shape[1])
-        
-        early_stop = EarlyStopping(monitor='val_accuracy', patience=15, restore_best_weights=True)
-        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5, min_lr=0.00001)
-        
-        history = self.dl_model.fit(
-            X_train, y_train,
-            validation_data=(X_val, y_val),
-            epochs=epochs,
-            batch_size=batch_size,
-            callbacks=[early_stop, reduce_lr],
-            verbose=1
+        print("Training XGBoost Model...")
+        self.xgb_model = xgb.XGBClassifier(
+            n_estimators=100,
+            max_depth=5,
+            learning_rate=0.1,
+            random_state=42,
+            use_label_encoder=False,
+            eval_metric='mlogloss'
         )
+        self.xgb_model.fit(X_train, y_train)
         
-        print("\nTraining Ensemble Model...")
-        self.ensemble_model = create_ensemble_model()
-        self.ensemble_model.fit(X_train, y_train)
+        preds = self.xgb_model.predict(X_val)
+        print(f"\nValidation Accuracy: {accuracy_score(y_val, preds):.4f}")
         
-        dl_pred = np.argmax(self.dl_model.predict(X_val, verbose=0), axis=1)
-        ensemble_pred = self.ensemble_model.predict(X_val)
-        
-        print(f"\nValidation Accuracy:")
-        print(f"Deep Learning: {accuracy_score(y_val, dl_pred):.4f}")
-        print(f"Ensemble: {accuracy_score(y_val, ensemble_pred):.4f}")
-        
-        return history
+        return None
     
     def predict(self, X, use_voting=True):
         """Make predictions"""
         X_scaled = self.scaler.transform(X)
-        
-        dl_probs = self.dl_model.predict(X_scaled, verbose=0)
-        ensemble_probs = self.ensemble_model.predict_proba(X_scaled)
-        
-        if use_voting:
-            combined_probs = 0.6 * dl_probs + 0.4 * ensemble_probs
-            predictions = np.argmax(combined_probs, axis=1)
-        else:
-            predictions = np.argmax(dl_probs, axis=1)
-        
+        predictions = self.xgb_model.predict(X_scaled)
         return self.label_encoder.inverse_transform(predictions)
     
     def predict_proba(self, X):
         """Get probability predictions"""
         X_scaled = self.scaler.transform(X)
-        dl_probs = self.dl_model.predict(X_scaled, verbose=0)
-        ensemble_probs = self.ensemble_model.predict_proba(X_scaled)
-        combined_probs = 0.6 * dl_probs + 0.4 * ensemble_probs
-        return combined_probs
+        return self.xgb_model.predict_proba(X_scaled)
+
 
 # ============================================
-# 6. TRAINING
+# 4. TRAINING
 # ============================================
 
 def main():
@@ -494,9 +403,9 @@ def main():
     print(f"\nTraining samples: {len(X_train)}")
     print(f"Testing samples: {len(X_test)}")
     
-    print("\n3. Training Hybrid Model...")
+    print("\n3. Training XGBoost Model...")
     predictor = HybridVARKPredictor()
-    predictor.fit(X_train, y_train, epochs=100, batch_size=32)
+    predictor.fit(X_train, y_train)
     
     print("\n4. Final Evaluation...")
     y_pred = predictor.predict(X_test)
@@ -510,7 +419,9 @@ def main():
     print(confusion_matrix(y_test, y_pred))
     
     print("\n5. Saving model...")
-    predictor.dl_model.save('vark_dl_model.h5')
+    import pickle
+    with open('vark_model.pkl', 'wb') as f:
+        pickle.dump(predictor, f)
     print("Model saved!")
     
     return predictor
